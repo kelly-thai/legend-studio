@@ -594,3 +594,4 @@ export const buildUrl = (parts: string[]): string =>
 export const sanitizeURL = (val: string): string => sanitizeUrl(val);
 
 export const isValidURL = (val: string): boolean => URL_REGEX.test(val);
+
