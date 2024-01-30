@@ -34,6 +34,9 @@ import {
   SearchIcon,
   BaseCard,
   OpenIcon,
+  Dialog,
+  MarkdownTextViewer,
+  Modal,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import {
@@ -42,7 +45,10 @@ import {
   LEGEND_STUDIO_ROUTE_PATTERN_TOKEN,
 } from '../../__lib__/LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
-import { useApplicationNavigationContext } from '@finos/legend-application';
+import {
+  useApplicationNavigationContext,
+  useConditionedApplicationNavigationContext,
+} from '@finos/legend-application';
 import { useParams } from '@finos/legend-application/browser';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/LegendStudioDocumentation.js';
 import { CreateProjectModal } from './CreateProjectModal.js';
@@ -301,6 +307,39 @@ const withWorkspaceSetupStore = (WrappedComponent: React.FC): React.FC =>
       </WorkspaceSetupStoreProvider>
     );
   };
+
+const SandboxAccessModal = observer(() => {
+  const setupStore = useWorkspaceSetupStore();
+  const closeModal = (): void => setupStore.setSandboxModal(false);
+  const applicationStore = setupStore.applicationStore;
+  const documentation = applicationStore.documentationService.getDocEntry(
+    LEGEND_STUDIO_DOCUMENTATION_KEY.SETUP_CREATE_SANDBOX_UNAUTHORIZED,
+  );
+
+  return (
+    <Dialog open={true} onClose={closeModal}>
+      <Modal darkMode={true} className="sandbox-project-modal">
+        <div className="sandbox-project-modal__header">
+          <div className="sandbox-project-modal__header__label">
+            Create Sandbox Project
+          </div>
+        </div>
+        <div className="sandbox-project-modal__form panel__content__form">
+          <div className="panel__content__form__section sandbox-project-modal__form__unsupported">
+            You do not have access to create a Sandbox Project
+          </div>
+        </div>
+        <div className="sandbox-project-modal__content">
+          {documentation?.markdownText && (
+            <div className="panel__content__form__section">
+              <MarkdownTextViewer value={documentation.markdownText} />
+            </div>
+          )}
+        </div>
+      </Modal>
+    </Dialog>
+  );
+});
 
 export const WorkspaceSetup = withWorkspaceSetupStore(
   observer(() => {
@@ -581,6 +620,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                       <DividerWithText className="workspace-setup__divider">
                         OR
                       </DividerWithText>
+                      {setupStore.sandboxModal && <SandboxAccessModal />}
                       <div className="workspace-setup__actions__button">
                         <button
                           className="workspace-setup__new-btn btn--dark"

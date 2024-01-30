@@ -64,16 +64,20 @@ export class WorkspaceSetupStore {
   readonly initState = ActionState.create();
 
   projects: Project[] = [];
-  sandboxProject: Project | boolean = false;
   currentProject?: Project | undefined;
   currentProjectConfigurationStatus?: ProjectConfigurationStatus | undefined;
   loadProjectsState = ActionState.create();
-  loadSandboxState = ActionState.create();
   createOrImportProjectState = ActionState.create();
   importProjectSuccessReport?: ImportProjectSuccessReport | undefined;
   showCreateProjectModal = false;
 
+  engineInitializeState = ActionState.create();
+  enginePromise: Promise<void> | undefined;
   createSandboxProjectState = ActionState.create();
+  sandboxProject: Project | boolean = false;
+  hasSandboxAccess: boolean | undefined;
+  sandboxModal = false;
+  loadSandboxState = ActionState.create();
 
   patches: Patch[] = [];
   loadPatchesState = ActionState.create();
@@ -104,10 +108,15 @@ export class WorkspaceSetupStore {
       showCreateWorkspaceModal: observable,
       sandboxProject: observable,
       createSandboxProjectState: observable,
+      engineInitializeState: observable,
+      enginePromise: observable,
+      sandboxModal: observable,
+      hasSandboxAccess: observable,
       setShowCreateProjectModal: action,
       setShowCreateWorkspaceModal: action,
       setShowAdvancedWorkspaceFilterOptions: action,
       setImportProjectSuccessReport: action,
+      setSandboxModal: action,
       changeWorkspace: action,
       resetProject: action,
       resetWorkspace: action,
@@ -119,6 +128,7 @@ export class WorkspaceSetupStore {
       importProject: flow,
       createSandboxProject: flow,
       createWorkspace: flow,
+      initializeEngine: flow,
     });
 
     this.applicationStore = applicationStore;
@@ -126,6 +136,9 @@ export class WorkspaceSetupStore {
     this.graphManagerState = new GraphManagerState(
       applicationStore.pluginManager,
       applicationStore.logService,
+    );
+    flowResult(this.initializeEngine()).catch(
+      applicationStore.alertUnhandledError,
     );
   }
 
@@ -172,8 +185,16 @@ export class WorkspaceSetupStore {
     }
   }
 
+  setSandboxModal(val: boolean): void {
+    this.sandboxModal = val;
+  }
+
   *createSandboxProject(): GeneratorFn<void> {
     try {
+      if (!Boolean(this.hasSandboxAccess)) {
+        this.setSandboxModal(true);
+        return;
+      }
       // create sandbox project and pilot workspace
       this.applicationStore.alertService.setBlockingAlert({
         message: 'Creating sandbox project...',
@@ -254,31 +275,6 @@ export class WorkspaceSetupStore {
           this.initState.pass();
           return;
         }
-
-        try {
-          yield flowResult(
-            this.graphManagerState.graphManager.initialize(
-              {
-                env: this.applicationStore.config.env,
-                tabSize: DEFAULT_TAB_SIZE,
-                clientConfig: {
-                  baseUrl: this.applicationStore.config.engineServerUrl,
-                },
-              },
-              {
-                tracerService: this.applicationStore.tracerService,
-                disableGraphConfiguration: true,
-              },
-            ),
-          );
-        } catch (error) {
-          assertErrorThrown(error);
-          this.applicationStore.logService.error(
-            LogEvent.create(LEGEND_STUDIO_APP_EVENT.ENGINE_MANAGER_FAILURE),
-            error,
-          );
-        }
-
         yield flowResult(
           this.changeProject(
             project,
@@ -303,6 +299,36 @@ export class WorkspaceSetupStore {
       );
       this.applicationStore.notificationService.notifyError(error);
       this.initState.fail();
+    }
+  }
+
+  *initializeEngine(): GeneratorFn<void> {
+    this.engineInitializeState.inProgress();
+    try {
+      const initPromise = this.graphManagerState.graphManager.initialize(
+        {
+          env: this.applicationStore.config.env,
+          tabSize: DEFAULT_TAB_SIZE,
+          clientConfig: {
+            baseUrl: this.applicationStore.config.engineServerUrl,
+          },
+        },
+        {
+          tracerService: this.applicationStore.tracerService,
+          disableGraphConfiguration: true,
+        },
+      );
+      this.enginePromise = initPromise;
+      yield initPromise;
+      this.enginePromise = undefined;
+      this.engineInitializeState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.ENGINE_MANAGER_FAILURE),
+        error,
+      );
+      this.engineInitializeState.complete();
     }
   }
 
@@ -331,6 +357,9 @@ export class WorkspaceSetupStore {
     this.sandboxProject = false;
     this.loadSandboxState.inProgress();
     try {
+      if (this.enginePromise) {
+        yield this.enginePromise;
+      }
       const sandboxProject = (
         (yield this.sdlcServerClient.getProjects(
           undefined,
@@ -339,6 +368,10 @@ export class WorkspaceSetupStore {
           1,
         )) as PlainObject<Project>[]
       ).map((v) => Project.serialization.fromJson(v));
+      this.hasSandboxAccess =
+        (yield this.graphManagerState.graphManager.userHasPrototypeProjectAccess(
+          this.sdlcServerClient.currentUser?.userId ?? '',
+        )) as unknown as boolean;
       this.sandboxProject = true;
       if (sandboxProject.length > 1) {
         throw new UnsupportedOperationError('Only one sandbox is supported., ');
@@ -351,6 +384,7 @@ export class WorkspaceSetupStore {
       assertErrorThrown(error);
       this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
+        error,
       );
       this.loadSandboxState.fail();
     }
