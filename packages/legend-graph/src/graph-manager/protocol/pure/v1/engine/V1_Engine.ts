@@ -1001,12 +1001,14 @@ export class V1_Engine {
     );
   }
 
-  async postValidateServiceAssertion(
+  async runServicePostVal(
+    servicePath: string,
     input: V1_PureModelContext,
     assertionId: string,
   ): Promise<PostValidationAssertionResult> {
     const result =
-      (await this.engineServerClient.TEMPORARY__postValidateAssertionId(
+      (await this.engineServerClient.runServicePostVal(
+        servicePath,
         V1_serializePureModelContext(input),
         assertionId,
       )) as unknown as PostValidationAssertionResult;
