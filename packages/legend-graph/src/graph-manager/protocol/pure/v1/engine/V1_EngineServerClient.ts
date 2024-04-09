@@ -767,10 +767,10 @@ export class V1_EngineServerClient extends AbstractServerClient {
     query: PlainObject<V1_Query>,
   ): Promise<PlainObject<V1_Query>> =>
     this.putWithTracing(
-      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.UPDATE_QUERY),
-      this._query(queryId),
-      query,
-    );
+        this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.UPDATE_QUERY),
+        this._query(queryId),
+        query,
+      );
   patchQuery = (
     queryId: string,
     query: PlainObject<Partial<V1_Query>>,
