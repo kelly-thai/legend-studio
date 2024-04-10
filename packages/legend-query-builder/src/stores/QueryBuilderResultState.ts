@@ -82,6 +82,7 @@ type QueryBuilderDataGridConfig = {
   columns: DataGridColumnState[];
   isPivotModeEnabled: boolean | undefined;
   isLocalModeEnabled: boolean | undefined;
+  previewLimit?: number | undefined;
 };
 
 export class QueryBuilderResultState {
@@ -131,6 +132,7 @@ export class QueryBuilderResultState {
       setQueryRunPromise: action,
       setIsQueryUsageViewerOpened: action,
       handlePreConfiguredGridConfig: action,
+      updatePreviewLimit: action,
       exportData: flow,
       runQuery: flow,
       cancelQuery: flow,
@@ -169,6 +171,7 @@ export class QueryBuilderResultState {
 
   setPreviewLimit(val: number): void {
     this.previewLimit = Math.max(1, val);
+    this.updatePreviewLimit();
   }
 
   addSelectedCell(val: QueryBuilderTDSResultCellData): void {
@@ -191,12 +194,22 @@ export class QueryBuilderResultState {
     this.isQueryUsageViewerOpened = val;
   }
 
+  updatePreviewLimit(): void {
+    if (this.gridConfig) {
+      this.gridConfig.previewLimit = this.previewLimit;
+    }
+  }
+
   handlePreConfiguredGridConfig(config: QueryGridConfig): void {
     const newConfig = {
       columns: config.columns as DataGridColumnState[],
       isPivotModeEnabled: Boolean(config.isPivotModeEnabled),
       isLocalModeEnabled: Boolean(config.isLocalModeEnabled),
+      previewLimit: config.previewLimit,
     };
+    if (config.previewLimit) {
+      this.setPreviewLimit(config.previewLimit);
+    }
     this.setGridConfig(newConfig);
   }
 
@@ -206,6 +219,7 @@ export class QueryBuilderResultState {
         columns: this.gridConfig.columns as object[],
         isPivotModeEnabled: Boolean(this.gridConfig.isPivotModeEnabled),
         isLocalModeEnabled: Boolean(this.gridConfig.isLocalModeEnabled),
+        previewLimit: this.gridConfig.previewLimit,
       };
     }
     return undefined;
