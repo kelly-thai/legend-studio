@@ -97,7 +97,7 @@ export class UpdateExistingServiceQuerySetupStore extends BaseQuerySetupStore {
     this.loadServicesState.inProgress();
     try {
       this.services = (
-        (yield this.depotServerClient.getEntitiesByClassifierPath(
+        (yield this.depotServerClient.DEPREACTED_getEntitiesByClassifierPath(
           CORE_PURE_PATH.SERVICE,
           {
             search: isValidSearchString ? searchText : undefined,
