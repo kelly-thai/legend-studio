@@ -99,6 +99,7 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
     }, [queryBuilderState, applicationStore]);
 
     useEffect(() => dataSpaceSearchRef.current?.focus());
+    console.log('setup, ');
 
     return (
       <>
