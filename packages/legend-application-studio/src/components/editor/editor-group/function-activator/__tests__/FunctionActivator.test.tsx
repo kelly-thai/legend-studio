@@ -66,9 +66,9 @@ test(integrationTest('Test Function Activator '), async () => {
     renderResult.getByRole('dialog'),
   );
   expect(
-    getByText(functionActivatorModal, 'Snowflake Native App'),
+    getByText(functionActivatorModal, 'Snowflake UDTF'),
   ).toBeDefined();
-  fireEvent.click(getByText(functionActivatorModal, 'Snowflake Native App'));
+  fireEvent.click(getByText(functionActivatorModal, 'Snowflake UDTF'));
   expect(getByText(functionActivatorModal, 'Target Path')).toBeDefined();
   fireEvent.click(getByText(functionActivatorModal, 'Activate'));
   fireEvent.click(getByText(explorerTree, 'NewActivator'));
