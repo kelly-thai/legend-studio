@@ -19,6 +19,7 @@ import {
   BasePopover,
   BaseRadioGroup,
   CustomSelectorInput,
+  clsx,
 } from '@finos/legend-art';
 import {
   type PureModel,
@@ -1226,6 +1227,7 @@ export const CustomDatePicker: React.FC<{
   valueSpecification: PrimitiveInstanceValue | SimpleFunctionExpression;
   graph: PureModel;
   observerContext: ObserverContext;
+  hasError?: boolean;
   typeCheckOption: {
     expectedType: Type;
     /**
@@ -1248,6 +1250,7 @@ export const CustomDatePicker: React.FC<{
     setValueSpecification,
     graph,
     observerContext,
+    hasError,
     typeCheckOption,
   } = props;
   const applicationStore = useApplicationStore();
@@ -1405,7 +1408,9 @@ export const CustomDatePicker: React.FC<{
   return (
     <>
       <button
-        className="value-spec-editor__date-picker__trigger"
+        className={clsx('value-spec-editor__date-picker__trigger', {
+          'value-spec-editor__date-picker__trigger--error': hasError,
+        })}
         title="Click to edit and pick from more date options"
         onClick={openCustomDatePickerPopover}
       >
