@@ -762,7 +762,7 @@ const AbsoluteDateValueSpecificationEditor: React.FC<{
   const absoluteDateValue =
     valueSpecification instanceof SimpleFunctionExpression
       ? ''
-      : (valueSpecification.values[0] as string);
+      : (valueSpecification.values[0] as string | null);
   const updateAbsoluteDateValue: React.ChangeEventHandler<HTMLInputElement> = (
     event,
   ) => {
@@ -839,7 +839,7 @@ const AbsoluteTimeValueSpecificationEditor: React.FC<{
   const absoluteTimeValue =
     valueSpecification instanceof SimpleFunctionExpression
       ? ''
-      : (valueSpecification.values[0] as string);
+      : (valueSpecification.values[0] as string | null);
   const updateAbsoluteTimeValue: React.ChangeEventHandler<HTMLInputElement> = (
     event,
   ) => {
