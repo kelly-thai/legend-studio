@@ -80,7 +80,9 @@ export const buildPrimitiveInstanceValue = (
       new GenericType(graph.getPrimitiveType(type)),
     ),
   );
-  instanceValue_setValues(instance, [value], observerContext);
+  if (value !== undefined) {
+    instanceValue_setValues(instance, [value], observerContext);
+  }
   return instance;
 };
 
@@ -134,19 +136,12 @@ export const buildDefaultInstanceValue = (
   graph: PureModel,
   type: Type,
   observerContext: ObserverContext,
+  enableInitializingDefaultValue: boolean,
 ): ValueSpecification => {
   const path = type.path;
   switch (path) {
     case PRIMITIVE_TYPE.STRING:
-    case PRIMITIVE_TYPE.BOOLEAN:
-    case PRIMITIVE_TYPE.STRICTDATE:
-    case PRIMITIVE_TYPE.DATETIME:
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.DECIMAL:
-    case PRIMITIVE_TYPE.FLOAT:
-    case PRIMITIVE_TYPE.BINARY:
-    case PRIMITIVE_TYPE.BYTE:
-    case PRIMITIVE_TYPE.INTEGER: {
+    case PRIMITIVE_TYPE.BOOLEAN: {
       return buildPrimitiveInstanceValue(
         graph,
         path,
@@ -154,11 +149,28 @@ export const buildDefaultInstanceValue = (
         observerContext,
       );
     }
+    case PRIMITIVE_TYPE.STRICTDATE:
+    case PRIMITIVE_TYPE.DATETIME:
+    case PRIMITIVE_TYPE.NUMBER:
+    case PRIMITIVE_TYPE.DECIMAL:
+    case PRIMITIVE_TYPE.FLOAT:
+    case PRIMITIVE_TYPE.INTEGER: {
+      return buildPrimitiveInstanceValue(
+        graph,
+        path,
+        enableInitializingDefaultValue
+          ? generateDefaultValueForPrimitiveType(path)
+          : null,
+        observerContext,
+      );
+    }
     case PRIMITIVE_TYPE.DATE: {
       return buildPrimitiveInstanceValue(
         graph,
         PRIMITIVE_TYPE.STRICTDATE,
-        generateDefaultValueForPrimitiveType(path),
+        enableInitializingDefaultValue
+          ? generateDefaultValueForPrimitiveType(path)
+          : null,
         observerContext,
       );
     }
@@ -168,11 +180,13 @@ export const buildDefaultInstanceValue = (
           const enumValueInstanceValue = new EnumValueInstanceValue(
             GenericTypeExplicitReference.create(new GenericType(type)),
           );
-          instanceValue_setValues(
-            enumValueInstanceValue,
-            [EnumValueExplicitReference.create(type.values[0] as Enum)],
-            observerContext,
-          );
+          if (enableInitializingDefaultValue) {
+            instanceValue_setValues(
+              enumValueInstanceValue,
+              [EnumValueExplicitReference.create(type.values[0] as Enum)],
+              observerContext,
+            );
+          }
           return enumValueInstanceValue;
         }
         throw new UnsupportedOperationError(
@@ -180,7 +194,7 @@ export const buildDefaultInstanceValue = (
         );
       }
       throw new UnsupportedOperationError(
-        `Can't get default value for type'${path}'`,
+        `Can't get default value for type '${path}'`,
       );
   }
 };
@@ -201,6 +215,7 @@ export const buildDefaultEmptyStringLambda = (
     graph,
     PrimitiveType.STRING,
     observerContext,
+    true,
   );
   return lambdaFunction;
 };
