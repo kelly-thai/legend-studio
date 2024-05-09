@@ -2166,7 +2166,8 @@
 .query-builder__usage-viewer {
   &__modal {
     padding: 0;
-    height: 30vh;
+    height: 40vh;
+    min-height: 50rem;
     width: 50vw;
     overflow: hidden;
   }
