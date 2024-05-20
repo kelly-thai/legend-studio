@@ -88,7 +88,6 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
   readonly applicationStore: LegendStudioApplicationStore;
   readonly sdlcServerClient: SDLCServerClient;
   readonly depotServerClient: DepotServerClient;
-  readonly graphManagerState: GraphManagerState;
   readonly initState = ActionState.create();
   readonly promoteState = ActionState.create();
   readonly loadQueryState = ActionState.create();
@@ -147,10 +146,6 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
     this.applicationStore = applicationStore;
     this.sdlcServerClient = sdlcServerClient;
     this.depotServerClient = depotServerClient;
-    this.graphManagerState = new GraphManagerState(
-      applicationStore.pluginManager,
-      applicationStore.logService,
-    );
     this.editorStore = new EditorStore(
       applicationStore,
       sdlcServerClient,
@@ -202,7 +197,7 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
     }
     try {
       this.initState.inProgress();
-      yield this.graphManagerState.graphManager.initialize(
+      yield this.graphManagerExtension.graphManager.initialize(
         {
           env: this.applicationStore.config.env,
           tabSize: DEFAULT_TAB_SIZE,
@@ -220,7 +215,7 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
       if (queryId) {
         let query: LightQuery | undefined;
         try {
-          query = (yield this.graphManagerState.graphManager.getLightQuery(
+          query = (yield this.graphManagerExtension.graphManager.getLightQuery(
             queryId,
           )) as LightQuery;
         } catch {
@@ -305,7 +300,7 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
     try {
       this.loadQueryState.inProgress();
       this.currentQueryInfo =
-        (yield this.graphManagerState.graphManager.getQueryInfo(
+        (yield this.graphManagerExtension.graphManager.getQueryInfo(
           query.id,
         )) as QueryInfo;
       this.currentQueryProject = StoreProjectData.serialization.fromJson(
@@ -426,7 +421,7 @@ export class DataSpaceTemplateQueryPromotionReviewerStore {
       });
       let compilationFailed = false;
       try {
-        yield this.graphManagerState.graphManager.compileEntities([
+        yield this.graphManagerExtension.graphManager.compileEntities([
           ...this.dependencyEntities,
           ...this.currentProjectEntities,
         ]);
