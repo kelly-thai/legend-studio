@@ -36,6 +36,8 @@ import type {
   DatasetEntitlementReport,
   DatasetSpecification,
 } from '../../action/analytics/StoreEntitlementAnalysis.js';
+import type { Entity } from '@finos/legend-storage';
+import { QueryExecutionContextInfo } from '../../action/query/Query.js';
 
 export type V1_ElementProtocolClassifierPathGetter = (
   protocol: V1_PackageableElement,
@@ -128,6 +130,16 @@ export type V1_DatasetEntitlementReportBuilder = (
   protocol: V1_DatasetEntitlementReport,
   plugins: PureProtocolProcessorPlugin[],
 ) => DatasetEntitlementReport | undefined;
+
+export type V1_QueryServiceExecutionBuilder = (
+  queryExecution: QueryExecutionContextInfo,
+  entities: Entity[],
+) =>
+  | {
+      mapping: string;
+      runtime: string;
+    }
+  | undefined;
 
 /**
  * Plugins for protocol processors. Technically, this is a sub-part of `PureGraphManagerPlugin`
@@ -251,4 +263,6 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
    * Get the list of builders for dataset entitlement report.
    */
   V1_getExtraDatasetEntitlementReportBuilders?(): V1_DatasetEntitlementReportBuilder[];
+
+  V1_getExtraV1_QueryServiceExecutionBuilder?(): V1_QueryServiceExecutionBuilder[];
 }

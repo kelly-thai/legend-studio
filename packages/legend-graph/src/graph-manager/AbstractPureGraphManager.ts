@@ -589,6 +589,17 @@ export abstract class AbstractPureGraphManager {
   abstract renameQuery(queryId: string, queryName: string): Promise<LightQuery>;
   abstract deleteQuery(queryId: string): Promise<LightQuery>;
 
+  abstract productionizeQueryToServiceEntity(
+    query: QueryInfo,
+    serviceConfig: {
+      name: string;
+      packageName: string;
+      pattern: string;
+      serviceOwners: string[];
+    },
+    graph: Entity[],
+  ): Promise<Entity>;
+
   // -------------------------------------- Analysis --------------------------------------
 
   abstract analyzeMappingModelCoverage(

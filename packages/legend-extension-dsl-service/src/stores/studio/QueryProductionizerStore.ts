@@ -531,23 +531,7 @@ export class QueryProductionizerStore {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      let mapping = this.currentQueryInfo.mapping;
-      let runtime = this.currentQueryInfo.runtime;
-      const execContext = this.currentQueryInfo.executionContext;
-      if (execContext instanceof QueryExplicitExecutionContextInfo) {
-        mapping = execContext.mapping;
-        runtime = execContext.runtime;
-      }
-      // TODO handle dataspace
-      const serviceEntity = await createServiceEntity(
-        this.servicePath,
-        this.servicePattern,
-        this.serviceOwners,
-        this.currentQueryInfo.content,
-        guaranteeNonNullable(mapping, 'Unable to resolve mapping for service'),
-        guaranteeNonNullable(runtime, 'Unable to resolve runtime for service'),
-        this.graphManagerState,
-      );
+
       const projectData = await Promise.all([
         this.sdlcServerClient.getEntities(project.projectId, undefined),
         this.sdlcServerClient.getConfiguration(project.projectId, undefined),
@@ -605,6 +589,20 @@ export class QueryProductionizerStore {
       )
         .map((p) => ProjectVersionEntities.serialization.fromJson(p))
         .flatMap((info) => info.entities);
+      // build service entity
+      const [servicePackagePath, serviceName] =
+        resolvePackagePathAndElementName(this.servicePath);
+      const serviceEntity =
+        await this.graphManagerState.graphManager.productionizeQueryToServiceEntity(
+          this.currentQueryInfo,
+          {
+            name: serviceName,
+            packageName: servicePackagePath,
+            pattern: this.servicePattern,
+            serviceOwners: this.serviceOwners,
+          },
+          [...currentProjectEntities, ...dependencyEntities],
+        );
 
       let compilationFailed = false;
       try {

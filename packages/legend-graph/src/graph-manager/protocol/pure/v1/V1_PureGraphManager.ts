@@ -185,10 +185,11 @@ import {
   V1_serializeExecutionPlan,
 } from './transformation/pureProtocol/serializationHelpers/executionPlan/V1_ExecutionPlanSerializationHelper.js';
 import { V1_buildExecutionPlan } from './transformation/pureGraph/to/V1_ExecutionPlanBuilder.js';
-import type {
+import {
   LightQuery,
   Query,
-  QueryInfo,
+  QueryExplicitExecutionContextInfo,
+  type QueryInfo,
 } from '../../../../graph-manager/action/query/Query.js';
 import {
   V1_buildQuery,
@@ -323,6 +324,13 @@ import { V1_SnowflakeApp } from './model/packageableElements/function/V1_Snowfla
 import type { ExecutionResult } from '../../../action/execution/ExecutionResult.js';
 import { V1_HostedService } from './model/packageableElements/function/V1_HostedService.js';
 import type { PostValidationAssertionResult } from '../../../../DSL_Service_Exports.js';
+import { V1_initPackageableElement } from './transformation/pureGraph/from/V1_CoreTransformerHelper.js';
+import { V1_UserListOwnership } from './model/packageableElements/service/V1_ServiceOwnership.js';
+import {
+  V1_PureExecution,
+  V1_PureSingleExecution,
+} from './model/packageableElements/service/V1_ServiceExecution.js';
+import { V1_RuntimePointer } from './model/packageableElements/runtime/V1_Runtime.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -2995,6 +3003,65 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       await this.engine.deleteQuery(queryId),
       this.engine.getCurrentUserId(),
     );
+  }
+
+  async productionizeQueryToServiceEntity(
+    query: QueryInfo,
+    serviceConfig: {
+      name: string;
+      packageName: string;
+      pattern: string;
+      serviceOwners: string[];
+    },
+    graph: Entity[],
+  ): Promise<Entity> {
+    const service = new V1_Service();
+    service.name = serviceConfig.name;
+    service.package = serviceConfig.packageName;
+    const owernship = new V1_UserListOwnership();
+    owernship.users = serviceConfig.serviceOwners;
+    service.ownership = owernship;
+    service.pattern = serviceConfig.pattern;
+    const lambda = await this.engine.transformCodeToLambda(
+      query.content,
+      undefined,
+      {
+        pruneSourceInformation: true,
+      },
+    );
+    const pureExecution = new V1_PureSingleExecution();
+    pureExecution.func = lambda;
+    if (query.mapping && query.runtime) {
+      pureExecution.mapping = query.mapping;
+      const runtime = new V1_RuntimePointer();
+      runtime.runtime = query.runtime;
+      pureExecution.runtime = runtime;
+    } else if (
+      query.executionContext instanceof QueryExplicitExecutionContextInfo
+    ) {
+      pureExecution.mapping = query.executionContext.mapping;
+      const runtime = new V1_RuntimePointer();
+      runtime.runtime = query.executionContext.runtime;
+      pureExecution.runtime = runtime;
+    } else {
+      const extraExecutionBuilder = this.pluginManager
+        .getPureProtocolProcessorPlugins()
+        .flatMap(
+          (plugin) =>
+            plugin.V1_getExtraV1_QueryServiceExecutionBuilder?.() ?? [],
+        );
+      const builder = extraExecutionBuilder
+        .map((builder) => builder(query.executionContext, graph))
+        .filter(isNonNullable);
+      if (builder.length === 1) {
+        pureExecution.mapping = guaranteeNonNullable(builder[0]).mapping;
+        const runtime = new V1_RuntimePointer();
+        runtime.runtime = guaranteeNonNullable(builder[0]).runtime;
+        pureExecution.runtime = runtime;
+      }
+    }
+    service.execution = pureExecution;
+    return this.elementProtocolToEntity(service);
   }
 
   // --------------------------------------------- Analysis ---------------------------------------------
