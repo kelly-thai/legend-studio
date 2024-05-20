@@ -179,7 +179,8 @@ const CreateQueryDialog = observer(() => {
             title="Create new query"
             disabled={Boolean(
               createQueryState.editorStore.isPerformingBlockingAction ||
-                isExistingQueryName,
+                isExistingQueryName ||
+                !createQueryState.queryName,
             )}
             onClick={create}
           />

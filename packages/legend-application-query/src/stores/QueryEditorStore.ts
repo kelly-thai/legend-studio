@@ -202,7 +202,7 @@ export class QueryCreatorState {
       createQuery: flow,
     });
     this.editorStore = editorStore;
-    this.queryName = queryName ?? 'New Query';
+    this.queryName = queryName ?? '';
   }
 
   setQueryName(val: string): void {
