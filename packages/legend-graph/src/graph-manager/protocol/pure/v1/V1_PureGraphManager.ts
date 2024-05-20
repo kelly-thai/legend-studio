@@ -2998,11 +2998,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  async deleteQuery(queryId: string): Promise<LightQuery> {
-    return V1_buildLightQuery(
-      await this.engine.deleteQuery(queryId),
-      this.engine.getCurrentUserId(),
-    );
+  async deleteQuery(queryId: string): Promise<void> {
+    await this.engine.deleteQuery(queryId);
   }
 
   async productionizeQueryToServiceEntity(
