@@ -24,6 +24,8 @@ import type { LegendStudioPluginManager } from '../application/LegendStudioPlugi
 import { useLocalObservable } from 'mobx-react-lite';
 import {
   ApplicationFrameworkProvider,
+  ReleaseLogManager,
+  ReleaseViewer,
   useApplicationStore,
 } from '@finos/legend-application';
 import type { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
