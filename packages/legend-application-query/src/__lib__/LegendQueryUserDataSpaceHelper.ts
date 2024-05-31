@@ -47,7 +47,22 @@ export const getIdFromDataSpaceInfo = (
   return undefined;
 };
 
-export const createVisitedDataspace = (
+export const createSimpleVisitedDataspace = (
+  groupId: string,
+  artifactId: string,
+  versionId: string | undefined,
+  path: string,
+  exec: string | undefined,
+): VisitedDataspace => ({
+  id: idFromGavAndPath(groupId, artifactId, path),
+  groupId,
+  artifactId,
+  versionId,
+  path,
+  execContext: exec,
+});
+
+export const createVisitedDataspaceFromInfo = (
   info: DataSpaceInfo,
   execContext: string | undefined,
 ): VisitedDataspace | undefined => {
@@ -55,16 +70,14 @@ export const createVisitedDataspace = (
   const artifactId = info.artifactId;
   const versionId = info.versionId;
   const path = info.path;
-  const id = getIdFromDataSpaceInfo(info);
-  if (groupId && artifactId && id) {
-    return {
-      id,
+  if (groupId && artifactId) {
+    return createSimpleVisitedDataspace(
       groupId,
       artifactId,
       versionId,
       path,
       execContext,
-    };
+    );
   }
   return undefined;
 };

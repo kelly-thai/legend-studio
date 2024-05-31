@@ -33,6 +33,7 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
+  returnUndefOnError,
   uuid,
 } from '@finos/legend-shared';
 import {
@@ -65,6 +66,7 @@ import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelp
 import {
   idFromGavAndPath,
   isDataSpaceInfoVisited,
+  createSimpleVisitedDataspace,
 } from '../../__lib__/LegendQueryUserDataSpaceHelper.js';
 import { LEGEND_QUERY_APP_EVENT } from '../../__lib__/LegendQueryEvent.js';
 
@@ -205,6 +207,15 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
             queryBuilderState.class?.path,
           ),
         );
+        returnUndefOnError(() =>
+          LegendQueryUserDataHelper.updateVisitedDataSpaceExecContext(
+            this.applicationStore.userDataService,
+            this.groupId,
+            this.artifactId,
+            dataSpace.path,
+            ec.name,
+          ),
+        );
       },
       (runtimeValue: Runtime) => {
         const runtimePointer = guaranteeType(runtimeValue, RuntimePointer);
@@ -278,18 +289,15 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
 
   addVisitedDataSpace(execName: string | undefined): void {
     try {
-      LegendQueryUserDataHelper.addRecentlyVistedDatspace(
+      LegendQueryUserDataHelper.addVisitedDatspace(
         this.applicationStore.userDataService,
-        {
-          groupId: this.groupId,
-          artifactId: this.artifactId,
-          versionId: this.versionId,
-          path: this.dataSpacePath,
-          name: extractElementNameFromPath(this.dataSpacePath),
-          title: undefined,
-          defaultExecutionContext: undefined,
-        },
-        execName,
+        createSimpleVisitedDataspace(
+          this.groupId,
+          this.artifactId,
+          this.versionId,
+          this.dataSpacePath,
+          execName,
+        ),
       );
     } catch (error) {
       assertErrorThrown(error);

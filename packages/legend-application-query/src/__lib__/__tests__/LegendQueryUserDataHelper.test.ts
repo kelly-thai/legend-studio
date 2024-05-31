@@ -155,9 +155,9 @@ describe('LegendQueryUserDataHelper', () => {
       };
 
       const userDataService = getService();
-      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace);
-      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace2);
-      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace3);
+      LegendQueryUserDataHelper.addVisitedDatspace(userDataService, dataspace);
+      LegendQueryUserDataHelper.addVisitedDatspace(userDataService, dataspace2);
+      LegendQueryUserDataHelper.addVisitedDatspace(userDataService, dataspace3);
 
       const expected = [dataspace3.id, dataspace2.id, dataspace.id];
 
@@ -194,9 +194,9 @@ describe('LegendQueryUserDataHelper', () => {
       };
 
       const userDataService = getService();
-      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace);
-      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace2);
-      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace3);
+      LegendQueryUserDataHelper.addVisitedDatspace(userDataService, dataspace);
+      LegendQueryUserDataHelper.addVisitedDatspace(userDataService, dataspace2);
+      LegendQueryUserDataHelper.addVisitedDatspace(userDataService, dataspace3);
 
       const expected = dataspace3.id;
 
@@ -213,7 +213,7 @@ describe('LegendQueryUserDataHelper', () => {
         execContext: 'key',
         versionId: '4.0.0',
       };
-      LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace4);
+      LegendQueryUserDataHelper.addVisitedDatspace(userDataService, dataspace4);
       expect(
         LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(userDataService),
       ).toHaveLength(3);
@@ -234,7 +234,7 @@ describe('LegendQueryUserDataHelper', () => {
           versionId: 'latest',
         };
 
-        LegendQueryUserDataHelper.addVistedDatspace(userDataService, dataspace);
+        LegendQueryUserDataHelper.addVisitedDatspace(userDataService, dataspace);
       }
       expect(
         LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(userDataService),
