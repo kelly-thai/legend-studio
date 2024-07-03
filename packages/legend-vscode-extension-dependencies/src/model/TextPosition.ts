@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020-present, Goldman Sachs
+ * Copyright (c) 2024-present, Goldman Sachs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,5 +14,17 @@
  * limitations under the License.
  */
 
-export * from './components/DiagramRenderer.js';
-export * from './graph-manager/index.js';
+import { createModelSchema, primitive } from 'serializr';
+import { SerializationFactory } from '../utils/SerializationUtils.js';
+
+export class TextPosition {
+  line!: number;
+  column!: number;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(TextPosition, {
+      line: primitive(),
+      column: primitive(),
+    }),
+  );
+}

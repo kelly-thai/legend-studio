@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020-present, Goldman Sachs
+ * Copyright (c) 2023-present, Goldman Sachs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,5 +14,12 @@
  * limitations under the License.
  */
 
-export * from './components/DiagramRenderer.js';
-export * from './graph-manager/index.js';
+interface Vscode {
+  postMessage(message: unknown): void;
+}
+
+declare const vscode: Vscode;
+
+export const postMessage = (message: unknown): void => {
+  vscode.postMessage(message);
+};
