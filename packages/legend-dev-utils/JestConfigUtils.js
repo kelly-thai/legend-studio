@@ -66,6 +66,7 @@ export const getBaseConfig = ({
       // Mock for non-javascript file as we don't need Jest to transform these
       // NOTE: we should not need this right now, but we leave this here just in case
       '\\.(svg|css|scss)$': '@finos/legend-dev-utils/mocks/fileMock',
+      '@finos/legend-graph$': '<rootDir>/packages/legend-graph/lib/index.js',
     },
     // Since each test should be independent, we automatically restore mock state before every test
     // NOTE: only works for `jest.spyOn` and not `jest.fn()`
