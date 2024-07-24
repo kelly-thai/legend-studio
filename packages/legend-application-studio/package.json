@@ -22,9 +22,15 @@
   "sideEffects": false,
   "type": "module",
   "exports": {
-    ".": "./lib/index.js",
+    ".": {
+      "import": "./lib/index.js",
+      "require": "./lib/bundles/bundle.cjs.js"
+    },
     "./test": "./lib/__test__.js",
-    "./lib/index.css": "./lib/index.css"
+    "./lib/index.css": {
+      "import": "./lib/index.css",
+      "require": "./lib/bundles/style/bundle.css"
+    }
   },
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -32,6 +38,7 @@
     "build": "yarn clean && yarn build:sass && yarn build:ts",
     "build:sass": "cross-env INIT_CWD=$INIT_CWD node ../../scripts/workflow/buildSass.js",
     "build:ts": "tsc --project ./tsconfig.build.json",
+    "bundle": "yarn clean && yarn build:ts && yarn rollup -c && echo '{\"type\": \"commonjs\"}' > lib/bundles/package.json",
     "clean": "npm-run-all clean:cache clean:lib",
     "clean:cache": "rimraf \"build\"",
     "clean:lib": "rimraf \"lib\"",
@@ -39,7 +46,7 @@
     "dev:sass": "sass style:lib --watch --load-path=../../node_modules/@finos/legend-art/scss",
     "dev:ts": "tsc --watch --preserveWatchOutput",
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\" \"./src/**/*.{js,ts,tsx}\"",
-    "publish:prepare": "node ../../scripts/release/preparePublishContent.js",
+    "publish:prepare": "node ../../scripts/release/preparePublishContent.js --pack=true",
     "publish:snapshot": "node ../../scripts/release/publishDevSnapshot.js",
     "test": "jest",
     "test:watch": "jest --watch"
@@ -68,6 +75,7 @@
     "react": "18.3.1",
     "react-dnd": "16.0.1",
     "react-dom": "18.3.1",
+    "rollup": "4.19.0",
     "serializr": "3.0.2",
     "yaml": "2.4.5"
   },

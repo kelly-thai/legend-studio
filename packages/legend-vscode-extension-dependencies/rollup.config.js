@@ -33,6 +33,9 @@ export default {
     'react-dom/server',
     'react',
     '@finos/legend-graph',
+    '@finos/legend-shared',
+    '@finos/legend-storage',
+    '@finos/legend-application-studio',
   ],
   output: [
     {
@@ -40,7 +43,7 @@ export default {
       format: 'cjs',
       sourcemap: false,
       inlineDynamicImports: true,
-      plugins: [terser()],
+      plugins: [],
       globals: {
         'react/jsx-runtime': 'jsxRuntime',
         'react-dom/client': 'ReactDOM',

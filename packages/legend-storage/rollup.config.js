@@ -33,7 +33,6 @@ export default {
     'react-dom/server',
     'react',
     '@finos/legend-shared',
-    '@finos/legend-storage',
   ],
   output: [
     {
@@ -41,7 +40,7 @@ export default {
       format: 'cjs',
       sourcemap: false,
       inlineDynamicImports: true,
-      plugins: [],
+      plugins: [terser()],
       globals: {
         'react/jsx-runtime': 'jsxRuntime',
         'react-dom/client': 'ReactDOM',
