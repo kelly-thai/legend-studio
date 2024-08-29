@@ -102,6 +102,17 @@ export const getDescendantsOfPackage = (
   return descendants;
 };
 
+export const getAllDescendantsOfPackage = (
+  parent: Package,
+  graph: PureModel,
+): Set<PackageableElement> =>
+  new Set(
+    graph
+      .getPackages(parent.path)
+      .map((p) => [...getDescendantsOfPackage(p)])
+      .flat(),
+  );
+
 export const getElementRootPackage = (element: PackageableElement): Package =>
   !element.package
     ? guaranteeType(element, Package)

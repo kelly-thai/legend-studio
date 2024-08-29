@@ -18,6 +18,7 @@ import {
   type Clazz,
   guaranteeNonNullable,
   IllegalStateError,
+  isNonNullable,
 } from '@finos/legend-shared';
 import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import type { Enumeration } from '../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
@@ -331,6 +332,12 @@ export class DependencyManager {
     return model?.getOwnNullableElement(path, includePackage);
   }
 
+  getPackages(path: string): Package[] {
+    return this.dependencyGraphs
+      .map((dep) => dep.getNullablePackage(path))
+      .filter(isNonNullable);
+  }
+
   getElementOrigin(element: PackageableElement): string | undefined {
     const model = this.dependencyGraphs.find((dep) =>
       Boolean(dep.getOwnNullableElement(element.path)),
@@ -339,4 +346,5 @@ export class DependencyManager {
       ? `${model.origin.groupId}${GAV_DELIMITER}${model.origin.artifactId}`
       : undefined;
   }
+  
 }

@@ -24,15 +24,15 @@ import {
 } from '@finos/legend-query-builder';
 import {
   type GraphManagerState,
+  Class,
+  getMappingCompatibleClasses,
+  RuntimePointer,
   type QueryExecutionContext,
   type Runtime,
   type Mapping,
-  getMappingCompatibleClasses,
-  RuntimePointer,
-  Class,
-  getDescendantsOfPackage,
   Package,
   QueryDataSpaceExecutionContext,
+  getAllDescendantsOfPackage,
   Service,
 } from '@finos/legend-graph';
 import {
@@ -47,7 +47,6 @@ import {
   assertErrorThrown,
   getNullableFirstEntry,
   filterByType,
-  uniq,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/query-builder/DataSpaceQueryBuilder.js';
@@ -72,18 +71,29 @@ export const resolveUsableDataSpaceClasses = (
   mapping: Mapping,
   graphManagerState: GraphManagerState,
 ): Class[] => {
+  const compatibleClasses = getMappingCompatibleClasses(
+    mapping,
+    graphManagerState.usableClasses,
+  );
   if (dataSpace.elements?.length) {
-    const dataSpaceElements = dataSpace.elements.map((ep) => ep.element.value);
-    return uniq([
-      ...dataSpaceElements.filter(filterByType(Class)),
-      ...dataSpaceElements
+    const included = dataSpace.elements
+      .filter((e) => !e.exclude)
+      .map((c) => c.element.value);
+    const includeClasses = [
+      ...included.filter(filterByType(Class)),
+      ...included
         .filter(filterByType(Package))
-        .map((_package) => Array.from(getDescendantsOfPackage(_package)))
+        .map((_p) => [
+          ...getAllDescendantsOfPackage(_p, graphManagerState.graph),
+        ])
         .flat()
         .filter(filterByType(Class)),
-    ]);
+    ];
+    return compatibleClasses.filter((_class) =>
+      includeClasses.includes(_class),
+    );
   }
-  return getMappingCompatibleClasses(mapping, graphManagerState.usableClasses);
+  return compatibleClasses;
 };
 export interface DataSpaceQuerySDLC extends QuerySDLC {
   groupId: string;
