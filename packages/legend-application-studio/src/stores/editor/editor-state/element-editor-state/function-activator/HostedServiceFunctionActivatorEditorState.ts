@@ -35,7 +35,7 @@ import { activator_setOwnership } from '../../../../graph-modifier/DSL_FunctionA
 import { User } from '@finos/legend-server-sdlc';
 
 //Ownership
-enum HostedServiceOwnershipType {
+export enum HostedServiceOwnershipType {
   DEPLOYMENT_OWNERSHIP = 'deploymentOwnership',
   USERLIST_OWNERSHIP = 'userListOwnership',
 }
@@ -47,10 +47,6 @@ export const OWNERSHIP_OPTIONS = [
   {
     label: DeploymentOwnershipLabel,
     value: HostedServiceOwnershipType.DEPLOYMENT_OWNERSHIP,
-  },
-  {
-    label: UserlistOwnershipLabel,
-    value: HostedServiceOwnershipType.USERLIST_OWNERSHIP,
   },
 ];
 
@@ -74,7 +70,6 @@ export class HostedServiceFunctionActivatorEditorState extends ElementEditorStat
       setSelectedOwnership: action,
       selectedOwnership: computed,
       storeModel: action,
-      generateLineage: action,
       validate: flow,
       deployToSandbox: flow,
       searchUsers: flow,
@@ -101,10 +96,6 @@ export class HostedServiceFunctionActivatorEditorState extends ElementEditorStat
 
   storeModel(val: boolean): void {
     this.activator.storeModel = val;
-  }
-
-  generateLineage(val: boolean): void {
-    this.activator.generateLineage = val;
   }
 
   get selectedOwnership(): HostedServiceOwnerOption | undefined {
