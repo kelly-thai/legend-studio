@@ -316,6 +316,7 @@ export const TEST_DATA__PreviewData_entities = [
         },
         element: 'model::MyDatabase',
         quoteIdentifiers: false,
+        queryTimeOutInSeconds: 500,
         type: 'H2',
       },
       name: 'MyConnection',
