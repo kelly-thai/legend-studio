@@ -1,1 +1,876 @@
+###Pure
+import meta::analytics::mapping::new::domain::*;
+
+Enum {doc.doc = 'Synonym type.'} meta::analytics::mapping::new::domain::SynonymType
+{
+    {doc.doc = 'The EFG'} 
+    EFG,
+    
+    ABC,
+    
+    DEF
+}
+
+Class {doc.doc = 'Sample Product Synonym.'} meta::analytics::mapping::new::domain::Synonym
+{
+    type: SynonymType[1];
+    
+    {doc.doc = 'value of the synonym.'}
+    value: String[1];
+}
+
+
+Class 
+
+{doc.doc = 'Sample Product object.'} meta::analytics::mapping::new::domain::Product
+{
+   {doc.doc = 'product description.'}
+   description : String[0..1];
+   
+   {doc.doc = 'product id.'} 
+   id : Integer[1];
+   
+   synonyms   : Synonym[*];   
+   
+   synonymByType(type:SynonymType[1]) {
+      $this.synonyms->filter(s|$s.type == $type)->first()
+   }:Synonym[0..1]; 
+   
+   synonymValueByType(type:SynonymType[1]) {
+      $this.synonymByType($type).value
+   }:String[0..1];    
+
+   synonymTypes() {
+      $this.synonyms.type
+   }:SynonymType[*];
+
+}
+
+Class meta::analytics::mapping::new::domain::Person
+{
+   firstName : String[1];
+   
+   lastName : String[1];
+   
+   address : Address[0..1];
+   
+   fullName() {
+      $this.firstName + ' ' + $this.lastName;
+   }:String[1];
+   
+   fullNameReversed(separator : String[0..1]) {
+      $this.lastName + if ($separator->isEmpty(), | ',', | $separator->toOne()) +  $this.firstName;
+   }: String[1];
+
+   simpleDetails() {
+      $this.fullName() + ' (' + $this.address->toOne().city  + ')';   
+   }:String[1];
+   
+   postalAddress() {
+      $this.fullName() + '\n' + $this.address->toOne().fullAddress();   
+   }:String[1]; //TODO this property should not show up as line2 is not mapped.
+}
+
+Class {doc.doc = 'Sample Address object.'} meta::analytics::mapping::new::domain::Address
+{
+   line1: String[1];
+   line2: String[1]; //this field is deliberately not mapped
+   city : String[1];
+   postcode : String[0..1];
+   hasPostCode() {
+      $this.postcode->isNotEmpty()
+   }:Boolean[1];
+   
+   fullAddress() {
+      $this.line1 + ',' + $this.line2 + ',' + $this.city + ',' + $this.postcode->toOne();   
+   }:String[1];
+}
+
+Class {doc.doc = 'Sample Product object.'} meta::analytics::mapping::new::domain::Employee extends Person
+{
+   kerberos : String[1];
+   trades: Trade[*];
+   displayName(){
+      $this.displayNameEFGtom('[', ']')
+   }:String[1];
+
+   displayNameEFGtom(openBracket : String[1], closeBracket : String[1]){
+      $this.fullName() + ' ' + $openBracket + $this.kerberos + $closeBracket
+   }:String[1];
+
+   displayNameEFGtom() {
+      $this.displayNameEFGtom('(', ')')
+   }:String[1];
+
+   coveredClients: OrganizationalEntity[*];
+}
+
+Class <<doc.deprecated>> meta::analytics::mapping::new::domain::Calendar
+{
+   date:Date[1];
+   fiscalYear: Integer[1];
+   fiscalDay: Integer[1];
+   isYtd(c:Calendar[1]){
+      ($this.fiscalYear == $c.fiscalYear) && 
+      ($this.fiscalDay <= $c.fiscalDay)    
+   }:Boolean[1];
+}
+
+Class meta::analytics::mapping::new::domain::GC
+{
+   totalGrossCredits:Float[0..1];
+   tradeDate: Calendar[1];
+   settlementDate: Calendar[1];
+   tradeId: String[1];
+   
+   wasTradeOnDate(date:Date[1]) {
+      $this.tradeDate.date == $date
+   }:Boolean[1];
+}
+
+Class {doc.doc = 'Sample Trade object.'} 
+meta::analytics::mapping::new::domain::Trade
+[
+   quantityMustBePositive: $this.quantity >= 0
+]
+{
+   {doc.doc = 'the id of the trade.'} 
+   tradeId : String[1];
+   
+   {doc.doc = 'quantity of the trade.'}
+   quantity : Float[1];
+
+   {doc.doc = 'exchangeRate of the trade.'}
+   exchangeRate : Decimal[1];   
+   
+   {doc.doc = 'interest of the trade.'} 
+   interest : Float[1];
+   
+   {doc.doc = 'factor of the trade.'} 
+   factor : Float[1];   
+   
+   {doc.doc = 'product traded.'} 
+   product : Product[0..1];
+   
+   {doc.doc = 'is booked'} 
+   booked : Boolean[1];
+   
+   {doc.doc = 'is live'} 
+   isLive : Boolean[0..1];
+   
+   {doc.doc = 'date of business'} 
+   tradeDate : StrictDate[1];
+   
+   settlementDate : DateTime[1];
+   
+   {doc.doc = 'is of date'} 
+   isTradedOnDate(date:Date[1]){
+      $this.tradeDate == $date
+   }: Boolean[1];   
+
+   isVoiceTrade() {
+      $this.isLive
+   }:Boolean[0..1];
+   
+  
+   {doc.doc = 'client name'}
+   clientName : String[1];
+   
+   {doc.doc = 'GC'}
+   gc : GC[*];
+
+   associatedEmployees(){
+      $this.salesPerson->concatenate($this.trader)
+   }:Employee[*];
+   
+   <<doc.deprecated>> 
+   {doc.doc = 'first and last name of the trader'}
+   traderNames() {
+      [
+         $this.trader.firstName,
+         $this.trader.lastName
+      ]
+   }:String[*];
+
+}
+
+Class <<temporal.businesstemporal>> meta::analytics::mapping::new::domain::BaseOrganizationalEntity
+{
+  
+   name: String[1];
+   id: Integer[1];
+}
+
+Class <<temporal.businesstemporal>> meta::analytics::mapping::new::domain::OrganizationalEntity extends BaseOrganizationalEntity
+{
+   isActive: Boolean[1];
+   parent: OrganizationalEntity[1];
+   parentAtDate(date:Date[1])
+   {
+      $this.parent($date);
+   }:OrganizationalEntity[1];
+   ceo: Person[1];
+
+   latestPositions()
+   {
+      $this.positions(now());
+   }:Position[*];
+}
+
+Class  {doc.doc = 'Sample PnL object.'} meta::analytics::mapping::new::domain::Pnl
+{
+    desk : String[1];
+    pnl : Integer[1];
+}
+
+Class <<typemodifiers.abstract>> meta::analytics::mapping::new::domain::BaseAccount
+{
+   id: Integer[1];
+   accountId(){
+      $this.id
+   }:Integer[1];
+}
+
+Class meta::analytics::mapping::new::domain::ActiveStatus
+{
+   active: Boolean[1];
+}
+
+Class <<typemodifiers.abstract>> meta::analytics::mapping::new::domain::Account extends BaseAccount, ActiveStatus
+{
+   accountNumber: String[1];
+}
+
+Class meta::analytics::mapping::new::domain::OwnedAccount
+{
+   owner: String[1];
+}
+
+Class meta::analytics::mapping::new::domain::FirmAccount extends Account, OwnedAccount
+{
+   name: String[1];
+   accountDetails(){
+      $this.accountNumber + ':' + $this.name
+   }:String[1];
+}
+
+Class meta::analytics::mapping::new::domain::EFGtomerAccount extends Account, OwnedAccount
+{
+   type: String[1];
+}
+
+Class meta::analytics::mapping::new::domain::TestAccount extends Account
+{
+}
+
+Class <<temporal.processingtemporal>> meta::analytics::mapping::new::domain::Position
+{
+   account:BaseAccount[1];
+   id: Integer[1];
+   quantity: Float[1];
+}
+
+Class <<typemodifiers.abstract, doc.deprecated>> meta::analytics::mapping::new::domain::Holdable
+{
+   id:String[1];
+}
+
+
+Class meta::analytics::mapping::new::domain::Contract extends Holdable
+{
+   contractId: String[1];
+   startDate: Date[1];
+   endDate: Date[1];
+}
+
+Class meta::analytics::mapping::new::domain::LoanContract extends Contract
+{
+   principal: Float[1];
+   type: String[1];
+}
+
+Class <<temporal.bitemporal>> meta::analytics::mapping::new::domain::Order
+{
+   id: Integer[1];
+   product : Product[1];
+   quantity: Integer[1];
+}
+
+Class <<temporal.bitemporal>> meta::analytics::mapping::new::domain::Execution
+{
+   id: Integer[1];
+   executionTime: Date[1];
+   quantity: Integer[1];
+}
+
+Association meta::analytics::mapping::new::domain::PositionExecutions
+{
+   position:Position[1];
+   executions:Execution[*];
+}
+
+Association meta::analytics::mapping::new::domain::OrderExecutions
+{
+   order:Order[1];
+   executions:Execution[*];
+}
+
+Association meta::analytics::mapping::new::domain::ClientOrders
+{
+   client:OrganizationalEntity[1];
+   orders:Order[*];
+}
+
+Association meta::analytics::mapping::new::domain::PositionHoldable
+{
+   position:Position[1];
+   holdable:Holdable[1];
+}
+
+Association meta::analytics::mapping::new::domain::PositionContract
+{
+   position:Position[1];
+   contract:LoanContract[1];
+}
+
+
+Association meta::analytics::mapping::new::domain::TradeClient
+{
+   trades:Trade[*];
+   client:OrganizationalEntity[1];
+}
+
+Association meta::analytics::mapping::new::domain::PositionClient
+{
+   positions:Position[*];
+   client:OrganizationalEntity[1];
+}
+
+Association <<doc.deprecated>> meta::analytics::mapping::new::domain::TraderTrades
+{
+   tradesAsTrader:Trade[*];
+   {doc.doc = 'executing trader'} trader:Employee[1];
+}
+
+Association meta::analytics::mapping::new::domain::SalesPersonTrades
+{
+   tradesAsSalesPerson:Trade[*];
+   {doc.doc = 'executing trader'} salesPerson:Employee[1];
+}
+
+Association meta::analytics::mapping::new::domain::AccountClient
+{
+   account:Account[1];
+   client:OrganizationalEntity[1];
+}
+
+
+function 
+meta::analytics::mapping::new::domain::ytd<T>(any:T[1], valueFunc:Function<{T[1]->Number[1]}>[1], calendarDateFunc:Function<{T[1]->meta::analytics::mapping::new::domain::Calendar[1]}>[1], reportEndDate:meta::analytics::mapping::new::domain::Calendar[1]):Number[1]
+{
+   if ($any->map($calendarDateFunc)->toOne().isYtd($reportEndDate), | $any->map($valueFunc)->toOne(), | 0.0)
+}
+
+
+###Mapping
+import meta::analytics::mapping::new::mapping::*;
+import meta::analytics::mapping::new::store::*;
+import meta::analytics::mapping::new::domain::*;
+
+//this is a separate mapping to
+//1. ensure we handle them
+//2. to ensure we spot any issues with classmappings returning embedded classes
+Mapping meta::analytics::mapping::new::mapping::DsbOrganizationalEntitySampleMapping
+(
+
+   OrganizationalEntity: Relational
+   {
+      scope([mappingAnalysisSampleDb]default.OE)
+      (
+         name: name,
+         id: id,
+         isActive: case(equal(isActive, 'Y'), 'true', 'false'),
+         parent: @ParentOrganizationalEntity,
+         //here to ensure embedded mappings returned by classmappings are handled correctly
+         //person class must also be mapped at root
+         ceo ( 
+            firstName: ceo_first_name,
+            lastName: ceo_last_name
+         )
+      )
+   }
+)
+
+Mapping meta::analytics::mapping::new::mapping::DsbSampleMapping
+(
+   include DsbOrganizationalEntitySampleMapping
+   
+   *Person : Operation {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+   }
+   
+   BaseAccount : Operation
+   {
+      meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
+   }
+   
+   Account : Operation
+   {
+      meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
+   }
+   
+   *TestAccount : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(testAccount1, testAccount2)
+   }   
+   
+   SynonymType: EnumerationMapping SynonymTypeMapping1
+   {
+        EFG:  'EFG',
+        ABC:    'ABC', 
+        DEF: 'DEF'
+   }
+   
+   TradeClient : Relational
+   {
+       AssociationMapping
+       (
+         trades: [mappingAnalysisSampleDb]@Trade_Client,  
+         client: [mappingAnalysisSampleDb]@Trade_Client
+       )
+   }
+   
+   PositionClient : Relational
+   {
+       AssociationMapping
+       (
+         positions: [mappingAnalysisSampleDb]@Positions_Client,  
+         client: [mappingAnalysisSampleDb]@Positions_Client
+       )
+   }   
+   
+   OrderExecutions : Relational
+   {
+      AssociationMapping
+      (
+         order: [mappingAnalysisSampleDb]@OrderExecutions,
+         executions: [mappingAnalysisSampleDb]@OrderExecutions
+      )
+   }
+   
+   PositionExecutions : Relational
+   {
+      AssociationMapping
+      (
+         executions: [mappingAnalysisSampleDb]@PositionExecutions,
+         position: [mappingAnalysisSampleDb]@PositionExecutions
+      )      
+   }
+   
+   ClientOrders : Relational
+   {
+      AssociationMapping
+      (
+         orders: [mappingAnalysisSampleDb]@OrderClient,
+         client: [mappingAnalysisSampleDb]@OrderClient
+      )
+   }   
+   
+   Order : Relational
+   {
+      scope([mappingAnalysisSampleDb]default.ORDERS)
+      (
+         id: id,
+         quantity: quantity,
+         product: [mappingAnalysisSampleDb]@OrderProduct
+      )
+   }
+   
+   Execution : Relational
+   {
+      scope([mappingAnalysisSampleDb]default.EXECUTIONS)
+      (
+         id: id,
+         quantity: quantity,
+         executionTime: executionTime
+      )
+   }
+
+   Trade : Relational
+   {
+      scope([mappingAnalysisSampleDb]default.TRADES)
+      (
+         tradeId : tradeId,
+         quantity : quantity,
+         interest : interest,
+         factor : factor,
+         exchangeRate: exchangeRate,
+         tradeDate: tradeDate,
+         settlementDate: settlementDate,
+         clientName : clientName,
+         booked: 'true',
+         isLive: 'true'
+      ),
+      salesPerson[set1] : [mappingAnalysisSampleDb]@TradesSalesPerson_Employee, 
+      trader[set1] : [mappingAnalysisSampleDb]@TradesTrader_Employee,
+      product: [mappingAnalysisSampleDb]@Trade_product,
+      gc: [mappingAnalysisSampleDb]@Trade_GC
+   }
+   
+   Employee[set1] : Relational
+   {
+      scope([mappingAnalysisSampleDb]default.EMPLOYEE)
+      (
+         firstName : FIRST_NAME,
+         lastName : LAST_NAME, 
+         kerberos: KERBEROS,
+         tradesAsTrader: @TradesTrader_Employee,
+         tradesAsSalesPerson: @TradesSalesPerson_Employee,
+         trades: @Trades_Employee,
+         
+         address (
+            line1 : ADDRESS_LINE_1,
+            city : CITY,
+            postcode : POSTCODE
+         ),
+         coveredClients: @EmployeeCoverage > @ClientCoverage
+      )
+   }
+   
+   Person[set2] : Relational
+   {
+      scope([mappingAnalysisSampleDb]default.DIRECTORS)
+      (
+         firstName : FIRST_NAME,
+         lastName : LAST_NAME
+      )
+   } 
+   
+   Product : Relational 
+   {
+      scope([mappingAnalysisSampleDb]default.PRODUCTS)
+      (
+         description: description,
+         id : product_id
+      ),
+      synonyms: [mappingAnalysisSampleDb]@Synonym_products
+   }
+   
+   Synonym : Relational
+   {
+      scope([mappingAnalysisSampleDb]default.SYNONYMS)
+      (
+         type: EnumerationMapping SynonymTypeMapping1: synonym_type,
+         value :   synonym_value
+      )
+   }
+   GC : Relational
+   {
+      scope([mappingAnalysisSampleDb]default.GC)
+      (
+         totalGrossCredits: total,
+         tradeId: trade_id,
+         tradeDate(
+            date: trade_date
+         ) Otherwise( [Calendar]:[mappingAnalysisSampleDb]@GC_TradeDate),
+         settlementDate[Calendar]:[mappingAnalysisSampleDb]@GC_SettlementDate 
+      )
+   }
+   
+   
+   Calendar[Calendar]: Relational
+   {
+      scope([mappingAnalysisSampleDb]default.CALENDAR)
+      (
+         date: date,
+         fiscalYear: fiscal_year,
+         fiscalDay: fiscal_day
+         
+      )
+   }
+   
+   Position: Relational
+   {
+      scope([mappingAnalysisSampleDb]default.POSITION)
+      (
+         id: id,
+         quantity: quantity,
+         account[firmAccount]: [mappingAnalysisSampleDb]@PositionFirmAccount_Join,
+         account[EFGtomerAccount]: [mappingAnalysisSampleDb]@PositionEFGtomerAccount_Join,
+         holdable() Inline [loanContract],
+         contract[contractA]()Inline[loanContractA],
+         contract[contractB]()Inline[loanContractB]
+      )
+   }
+   FirmAccount[firmAccount]: Relational
+   {
+      ~filter [mappingAnalysisSampleDb]FirmAccountFilter
+      scope([mappingAnalysisSampleDb]default.ACCOUNT)
+      (
+         id: id,
+         name: name,
+         accountNumber: id,
+         owner: 'N/A', //should not appear in universe under BaseAccount/Account
+         active: 'true',
+         client:@Account_Client
+      )
+   }
+   
+   EFGtomerAccount[EFGtomerAccount]: Relational
+   {
+      ~filter [mappingAnalysisSampleDb]EFGtomerAccountFilter
+      scope([mappingAnalysisSampleDb]default.ACCOUNT)
+      (
+         id: id,
+         type: accountType,
+         accountNumber: id,
+         owner: 'N/A', //should not appear in universe under BaseAccount/Account
+         active: 'true',
+         client:@Account_Client
+      )
+   }
+   
+   TestAccount[testAccount1]: Relational
+   {
+      ~filter [mappingAnalysisSampleDb]TestAccountFilter
+      scope([mappingAnalysisSampleDb]default.ACCOUNT)
+      (
+         id: id,
+         active: 'true',
+         client:@Account_Client
+      )      
+   }
+   
+   TestAccount[testAccount2]: Relational
+   {
+      ~filter [mappingAnalysisSampleDb]TestAccountFilter2
+      scope([mappingAnalysisSampleDb]default.ACCOUNT)
+      (
+         id: id,
+         active: 'true',
+         client:@Account_Client
+      )      
+   }   
+   
+   *LoanContract[loanContract]: Relational
+   {
+      scope([mappingAnalysisSampleDb]default.POSITION)
+      (
+         id: contract_id,
+         contractId: contract_id,
+         startDate: contract_startDate,
+         endDate: contract_endDate,
+         principal: contract_principal
+      )
+   }
+
+   LoanContract : Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(loanContractA, loanContractB)
+   }  
+
+   LoanContract[loanContractA]: Relational
+   {
+      ~filter [mappingAnalysisSampleDb]AContractTypeFilter
+      scope([mappingAnalysisSampleDb]default.POSITION)
+      (
+         id: contract_id,
+         contractId: contract_id,
+         startDate: contract_startDate,
+         endDate: contract_endDate,
+         principal: contract_principal,
+         type: contract_type
+      )
+   }
+   
+   LoanContract[loanContractB]: Relational
+   {
+      ~filter [mappingAnalysisSampleDb]BContractTypeFilter
+      scope([mappingAnalysisSampleDb]default.POSITION)
+      (
+         id: contract_id,
+         contractId: contract_id,
+         startDate: contract_startDate,
+         endDate: contract_endDate,
+         principal: contract_principal,
+         type: contract_type
+      )
+   }
+)
+
+###Relational
+
+Database meta::analytics::mapping::new::store::mappingAnalysisSampleDb
+(
+   Table ORDERS (
+      id INT PRIMARY KEY,
+      quantity INT,
+      productId INT,
+      clientId INT
+   )
+
+   Table EXECUTIONS (
+      id INT PRIMARY KEY,
+      executionTime TIMESTAMP,
+      quantity INT,
+      orderId INT,
+      positionId INT
+   )
+
+   Table TRADES(
+       tradeId VARCHAR(80)  PRIMARY KEY,
+       clientName VARCHAR(80),
+       salesPersonID VARCHAR(30),
+       traderID VARCHAR(30),
+       quantity FLOAT,
+       interest FLOAT,
+       factor FLOAT,
+       exchangeRate DECIMAL(25,10),
+       product INT,
+       tradeDate Date,
+       settlementDate TIMESTAMP
+   )
+
+   Table EMPLOYEE(
+      EMP_GUID CHAR(32)  PRIMARY KEY,
+      FIRST_NAME VARCHAR(64),
+      LAST_NAME VARCHAR(64),
+      KERBEROS VARCHAR(30),
+      ADDRESS_LINE_1 VARCHAR(30),
+      CITY VARCHAR(20),
+      POSTCODE VARCHAR(5)
+   )
+
+   Table DIRECTORS(
+      GUID CHAR(32)  PRIMARY KEY,
+      FIRST_NAME VARCHAR(64),
+      LAST_NAME VARCHAR(64)
+   )
+
+   Table PRODUCTS(product_id INT PRIMARY KEY, description VARCHAR(64))
+
+   Table SYNONYMS(product_id INT PRIMARY KEY, synonym_type VARCHAR(10) PRIMARY KEY, synonym_value VARCHAR(30))
+
+   Table CALENDAR(date DATE PRIMARY KEY, fiscal_year INT, fiscal_day INT)
+
+   Table GC(
+      gc_id INT PRIMARY KEY,
+      total FLOAT,
+      trade_date DATE,
+      settlement_date DATE,
+      trade_id INT
+   )
+
+   Table OE(
+      milestoning(
+         business(BUS_FROM=from_z, BUS_THRU=thru_z)
+      )
+      id INT PRIMARY KEY,
+      name VARCHAR(20),
+      isActive VARCHAR(1),
+      parentId INT,
+      ceo_first_name VARCHAR(20),
+      ceo_last_name VARCHAR(20),
+      from_z TIMESTAMP,
+      thru_z TIMESTAMP PRIMARY KEY
+   )
+
+   Table POSITION(
+      milestoning(
+        processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z)
+      )
+      id INT PRIMARY KEY,
+      accountId VARCHAR(5),
+      clientId INT,
+      quantity FLOAT,
+      contract_id VARCHAR(200),
+      contract_startDate DATE,
+      contract_endDate DATE,
+      contract_principal FLOAT,
+      contract_type VARCHAR(200),
+      in_z TIMESTAMP,
+      out_z TIMESTAMP
+   )
+
+   Table ACCOUNT(
+      id INT PRIMARY KEY,
+      name VARCHAR(20),
+      accountType VARCHAR(20),
+      clientId INT
+   )
+
+   Table CLIENTCOVERAGE(
+      employeeId CHAR(32),
+      clientId INT
+   )
+
+   Join PositionFirmAccount_Join(POSITION.accountId = ACCOUNT.id and ACCOUNT.accountType is null)
+   Join PositionEFGtomerAccount_Join(POSITION.accountId = ACCOUNT.id and ACCOUNT.accountType is not null)
+
+   Join TradesSalesPerson_Employee(TRADES.salesPersonID = EMPLOYEE.KERBEROS)
+   Join TradesTrader_Employee(TRADES.traderID = EMPLOYEE.KERBEROS)
+   Join Trades_Employee(TRADES.traderID = EMPLOYEE.KERBEROS or TRADES.salesPersonID = EMPLOYEE.KERBEROS)
+
+   Join Synonym_products(PRODUCTS.product_id = SYNONYMS.product_id)
+
+   Join Trade_product(TRADES.product = PRODUCTS.product_id)
+
+   Join GC_TradeDate(GC.trade_date = CALENDAR.date)
+
+   Join GC_SettlementDate(GC.settlement_date = CALENDAR.date)
+
+   Join Trade_GC(GC.trade_id = TRADES.tradeId)
+
+   Join Trade_Client(OE.name = TRADES.clientName)
+
+   Join ParentOrganizationalEntity(OE.id = {target}.parentId)
+
+   Join Positions_Client(POSITION.clientId = OE.id)
+
+   Join EmployeeCoverage(CLIENTCOVERAGE.employeeId = EMPLOYEE.EMP_GUID)
+
+   Join ClientCoverage(CLIENTCOVERAGE.clientId = OE.id)
+
+   Join Account_Client(ACCOUNT.clientId = OE.id)
+
+   Join OrderProduct(ORDERS.productId = PRODUCTS.product_id)
+   Join OrderClient(ORDERS.clientId = OE.id)
+   Join OrderExecutions(ORDERS.id = EXECUTIONS.orderId)
+   Join PositionExecutions(POSITION.id = EXECUTIONS.positionId)
+
+
+   Filter EFGtomerAccountFilter
+   (
+      ACCOUNT.accountType is not null
+   )
+
+
+   Filter TestAccountFilter
+   (
+      ACCOUNT.accountType = 'TEST'
+   )
+
+   Filter TestAccountFilter2
+   (
+      ACCOUNT.accountType = 'TEST2'
+   )
+
+   Filter FirmAccountFilter
+   (
+      ACCOUNT.accountType is null
+   )
+   
+   Filter AContractTypeFilter
+   (
+      POSITION.contract_type = 'A'
+   )
+
+   Filter BContractTypeFilter
+   (
+      POSITION.contract_type = 'B'
+   )
+   
+)
+
+
 
