@@ -59,6 +59,7 @@ import {
   PrimitiveType,
   LambdaFunctionInstanceValue,
   DataElement,
+  Type,
 } from '@finos/legend-graph';
 import {
   assertTrue,
@@ -122,7 +123,7 @@ export const createDefaultEqualToJSONTestAssertion = (
 };
 
 export const createEmbeddedDataFromClass = (
-  _class: Class,
+  _class: Type,
   editorStore: EditorStore,
 ): ExternalFormatData => {
   const _json = createMockDataForMappingElementSource(_class, editorStore);
@@ -132,7 +133,7 @@ export const createEmbeddedDataFromClass = (
 };
 
 export const createBareModelStoreData = (
-  _class: Class,
+  _class: Type,
   editorStore: EditorStore,
 ): ModelStoreData => {
   const embeddedData = createEmbeddedDataFromClass(_class, editorStore);

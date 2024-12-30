@@ -52,6 +52,7 @@ import {
 import {
   PackageableElementExplicitReference,
   type Class,
+  type Type,
   type DataElement,
 } from '@finos/legend-graph';
 import {
@@ -256,7 +257,7 @@ export const ModelEmbeddedDataEditor = observer(
     const elementFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: { data: PackageableElementOption<Class> }): string =>
+      stringify: (option: { data: PackageableElementOption<Type> }): string =>
         option.data.value.path,
     });
     const editorStore = modelStoreDataState.editorStore;
@@ -274,7 +275,7 @@ export const ModelEmbeddedDataEditor = observer(
       label: _class.name,
     };
 
-    const changeClass = (val: PackageableElementOption<Class> | null): void => {
+    const changeClass = (val: PackageableElementOption<Type> | null): void => {
       if (val?.value) {
         modelStoreData_setDataModelModel(
           modelData,
