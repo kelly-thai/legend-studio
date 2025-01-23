@@ -54,6 +54,7 @@ import {
   RuntimePointer,
   PackageableElementExplicitReference,
   MILESTONING_STEREOTYPE,
+  ColSpecInstanceValue,
 } from '@finos/legend-graph';
 import { processTDSPostFilterExpression } from './fetch-structure/tds/post-filter/QueryBuilderPostFilterStateBuilder.js';
 import { processFilterExpression } from './filter/QueryBuilderFilterStateBuilder.js';
@@ -993,6 +994,10 @@ export class QueryBuilderValueSpecificationProcessor
     throw new UnsupportedOperationError(
       `Can't process col spec array expression with parent expression of function ${this.parentExpression.functionName}()`,
     );
+  }
+
+  visit_ColSpecInstance(valueSpeciciation: ColSpecInstanceValue): void {
+    throw new Error('Method not implemented.');
   }
 }
 

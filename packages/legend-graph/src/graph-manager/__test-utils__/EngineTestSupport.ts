@@ -34,7 +34,8 @@ import {
   type V1_ArtifactGenerationExtensionOutput,
 } from '../protocol/pure/v1/engine/generation/V1_ArtifactGenerationExtensionApi.js';
 
-export const ENGINE_TEST_SUPPORT_API_URL = 'http://localhost:6300/api';
+export const ENGINE_TEST_SUPPORT_API_URL =
+  'https://int.exec.alloy.site.gs.com/api';
 
 export async function ENGINE_TEST_SUPPORT__getClassifierPathMapping(): Promise<
   ClassifierPathMapping[]
