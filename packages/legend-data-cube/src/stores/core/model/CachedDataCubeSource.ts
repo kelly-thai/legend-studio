@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { DataCubeSource } from '@finos/legend-data-cube';
 import type { V1_PureModelContextData } from '@finos/legend-graph';
+import { DataCubeSource } from './DataCubeSource.js';
 
 export const CACHED_DATA_CUBE_SOURCE_TYPE = 'cached';
 

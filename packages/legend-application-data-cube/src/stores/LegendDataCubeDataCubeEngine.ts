@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {
   V1_Lambda,
   V1_ValueSpecification,
@@ -21,7 +20,7 @@ import {
   V1_PureGraphManager,
   type V1_PureModelContext,
   type ExecutionResult,
-  V1_ExecutionResult,
+  type V1_ExecutionResult,
   RelationalExecutionActivities,
   TDSExecutionResult,
   V1_ParameterValue,
@@ -44,10 +43,33 @@ import {
   V1_PackageableType,
   V1_deserializeRawValueSpecificationType,
   V1_Protocol,
-  V1_ExecutionPlan,
+  type V1_ExecutionPlan,
   V1_deserializeExecutionPlan,
   V1_SQLExecutionNode,
   V1_SimpleExecutionPlan,
+  V1_Binary,
+  V1_ClassInstance,
+  V1_ClassInstanceType,
+  V1_Column,
+  V1_Database,
+  V1_Date,
+  V1_Double,
+  V1_DuckDBDatasourceSpecification,
+  V1_EngineRuntime,
+  V1_IdentifiedConnection,
+  V1_Integer,
+  V1_PackageableElementPointer,
+  V1_PackageableRuntime,
+  V1_PureModelContextData,
+  V1_RelationStoreAccessor,
+  type V1_RelationalDataType,
+  V1_RelationalDatabaseConnection,
+  V1_Schema,
+  V1_StoreConnections,
+  V1_Table,
+  V1_TestAuthenticationStrategy,
+  V1_VarChar,
+  type TDSBuilder,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -78,9 +100,10 @@ import {
   at,
   assertType,
   guaranteeType,
+  assertNonNullable,
 } from '@finos/legend-shared';
 import type { LegendDataCubeApplicationStore } from './LegendDataCubeBaseStore.js';
-import { LegendDataCubeDataCubeCacheEngine } from './LegendDataCubeDataCubeCacheEngine.js';
+import { LegendDataCubeDataCubeCacheEngine } from './LegendDataCubeCacheManager.js';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import {
   LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE,
@@ -92,7 +115,6 @@ import {
   resolveVersion,
   type DepotServerClient,
 } from '@finos/legend-server-depot';
-import { synthesizeCachedSource } from './CachedDataCubeSourceBuilder.js';
 
 export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   private readonly _application: LegendDataCubeApplicationStore;
@@ -379,6 +401,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
   ) {
     const queryCodePromise = this.getValueSpecificationCode(query);
     let result: ExecutionResult;
+    const startTime = performance.now();
     if (source instanceof AdhocQueryDataCubeSource) {
       result = await this._runQuery(query, source.model, undefined, options);
     } else if (source instanceof LegendQueryDataCubeSource) {
@@ -397,16 +420,27 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         [],
         options,
       );
-      const sql = this.getSqlFromExecutionPlan(executionPlan);
-      if (sql !== undefined) {
-        return {
-          executedQuery: await queryCodePromise,
-          executedSQL: sql,
-          result: await this._cacheManager.runQuery(sql),
-        };
-      } else {
-        throw new UnsupportedOperationError(`Can't execute generated sql`);
+      let sql;
+      if (executionPlan instanceof V1_SimpleExecutionPlan) {
+        sql = executionPlan.rootExecutionNode.executionNodes
+          .filter((node) => node instanceof V1_SQLExecutionNode)
+          .map((x) =>
+            guaranteeType(
+              x,
+              V1_SQLExecutionNode,
+              `Can't generate sql for the query`,
+            ),
+          )
+          .at(-1)?.sqlQuery;
       }
+      assertNonNullable(sql, `Can't generate sql for the query`);
+      const endTime = performance.now();
+      return {
+        executedQuery: await queryCodePromise,
+        executedSQL: sql,
+        result: await this._cacheManager.runQuery(sql),
+        executionTime: endTime - startTime,
+      };
     } else {
       throw new UnsupportedOperationError(
         `Can't execute query with unsupported source`,
@@ -417,6 +451,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       TDSExecutionResult,
       `Can't extract execution result: expected tabular data set format`,
     );
+    const endTime = performance.now();
     const queryCode = await queryCodePromise;
     const sql =
       result.activities?.[0] instanceof RelationalExecutionActivities
@@ -429,6 +464,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       result: result,
       executedQuery: queryCode,
       executedSQL: sql,
+      executionTime: endTime - startTime,
     };
   }
 
@@ -465,6 +501,8 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       return this._getLambdaRelationType(query, source.model);
     } else if (source instanceof LegendQueryDataCubeSource) {
       return this._getLambdaRelationType(query, source.model);
+    } else if (source instanceof CachedDataCubeSource) {
+      return this._getLambdaRelationType(query, serialize(source.model));
     }
     throw new UnsupportedOperationError(
       `Can't get relation type for lambda with unsupported source`,
@@ -546,20 +584,11 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     );
   }
 
-  private getSqlFromExecutionPlan(executionPlan: V1_ExecutionPlan) {
-    if (executionPlan instanceof V1_SimpleExecutionPlan) {
-      return executionPlan.rootExecutionNode.executionNodes
-        .filter((node) => node instanceof V1_SQLExecutionNode)
-        .map((x) => x as V1_SQLExecutionNode)
-        .at(-1)?.sqlQuery;
-    }
-  }
-
   // ---------------------------------- CACHING --------------------------------------
 
   override async initializeCache(
     source: DataCubeSource,
-  ): Promise<CachedDataCubeSource | void> {
+  ): Promise<CachedDataCubeSource | undefined> {
     if (source instanceof LegendQueryDataCubeSource) {
       const fromQuery = this.buildExecutionContext(source);
       fromQuery?.parameters.unshift(source.query);
@@ -577,13 +606,114 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       );
       const result = resultQuery.result;
       await this._cacheManager.initializeDuckDb(result);
-      return synthesizeCachedSource(source, result.builder);
+      return this._synthesizeCachedSource(source, result.builder);
     }
-    return Promise.resolve();
+    return undefined;
   }
 
   override async clearCache() {
     await this._cacheManager.clearDuckDb();
+  }
+
+  // --------------------------------- CACHING UTILITY -------------------------------
+
+  private _synthesizeCachedSource(
+    source: LegendQueryDataCubeSource,
+    builder: TDSBuilder,
+  ) {
+    const cachedSource = new CachedDataCubeSource();
+    cachedSource.columns = source.columns;
+    cachedSource.query = this._synthesizeQuery([
+      'local::duckdb::cachedStore',
+      'main',
+      'cached_tbl',
+    ]);
+    cachedSource.model = this._synthesizeModel(builder);
+    cachedSource.runtime = 'local::duckdb::runtime';
+    return cachedSource;
+  }
+
+  private _synthesizeQuery(databaseAccessor: string[]) {
+    const classInstance = new V1_ClassInstance();
+    classInstance.type = V1_ClassInstanceType.RELATION_STORE_ACCESSOR;
+    const storeAccessor = new V1_RelationStoreAccessor();
+    storeAccessor.path = databaseAccessor;
+    classInstance.value = storeAccessor;
+    return classInstance;
+  }
+
+  private _synthesizeModel(builder: TDSBuilder) {
+    // synthesize table
+    const table = new V1_Table();
+    table.name = 'cached_tbl';
+    table.columns = builder.columns.map((col) => {
+      const column = new V1_Column();
+      column.name = col.name;
+      column.type = this._getColumnType(col.type);
+      return column;
+    });
+    // synthesize schema
+    const schema = new V1_Schema();
+    schema.name = 'main';
+    schema.tables = [table];
+    // synthesize database
+    const database = new V1_Database();
+    database.name = 'cachedStore';
+    database.package = 'local::duckdb';
+    database.schemas = [schema];
+
+    // build connection
+    const connection = new V1_RelationalDatabaseConnection();
+    connection.databaseType = 'DuckDB';
+    connection.type = 'DuckDB';
+    const dataSourceSpec = new V1_DuckDBDatasourceSpecification();
+    dataSourceSpec.path = '/temp/path';
+    connection.store = 'local::duckdb::cachedStore';
+    connection.datasourceSpecification = dataSourceSpec;
+    connection.authenticationStrategy = new V1_TestAuthenticationStrategy();
+
+    // build runtime
+    const runtime = new V1_EngineRuntime();
+    const storeConnections = new V1_StoreConnections();
+    storeConnections.store = new V1_PackageableElementPointer(
+      'STORE',
+      `${database.package}::${database.name}`,
+    );
+    const idConnection = new V1_IdentifiedConnection();
+    idConnection.connection = connection;
+    idConnection.id = 'local_duckdb_connection';
+    storeConnections.storeConnections = [idConnection];
+    runtime.connections = [storeConnections];
+
+    const packageableRuntime = new V1_PackageableRuntime();
+    packageableRuntime.runtimeValue = runtime;
+    packageableRuntime.package = 'local::duckdb';
+    packageableRuntime.name = 'runtime';
+
+    const pmcd = new V1_PureModelContextData();
+    pmcd.elements = [database, packageableRuntime];
+    return pmcd;
+  }
+
+  // TODO: need a better way to infer datatype from tds builder
+  private _getColumnType(type: string | undefined): V1_RelationalDataType {
+    if (type === undefined) {
+      throw Error('Unsupported data type');
+    }
+    switch (type) {
+      case 'string':
+        return new V1_VarChar();
+      case 'integer':
+        return new V1_Integer();
+      case 'date':
+        return new V1_Date();
+      case 'boolean':
+        return new V1_Binary();
+      case 'number':
+        return new V1_Double();
+      default:
+        return new V1_VarChar();
+    }
   }
 
   // ---------------------------------- APPLICATION ----------------------------------

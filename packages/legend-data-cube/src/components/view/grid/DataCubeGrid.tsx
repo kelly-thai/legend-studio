@@ -285,7 +285,9 @@ const DataCubeGridStatusBar = observer((props: { view: DataCubeViewState }) => {
         <div className="h-3 w-[1px] bg-neutral-200" />
         <button
           className="flex h-full items-center p-2"
-          onClick={() => grid.setPaginationEnabled(!grid.isPaginationEnabled)}
+          onClick={() => {
+            grid.setPaginationEnabled(!grid.isPaginationEnabled);
+          }}
         >
           <Switch
             checked={grid.isPaginationEnabled}
@@ -320,6 +322,7 @@ const DataCubeGridStatusBar = observer((props: { view: DataCubeViewState }) => {
           view.dataCube.options.enableCache && (
             <button
               className="flex h-full items-center p-2"
+              // eslint-disable-next-line @typescript-eslint/no-misused-promises
               onClick={() => grid.setCachingEnabled(!grid.isCachingEnabled)}
             >
               <Switch
@@ -349,7 +352,7 @@ const DataCubeGridStatusBar = observer((props: { view: DataCubeViewState }) => {
                   'text-neutral-500': !grid.isCachingEnabled,
                 })}
               >
-                Caching
+                Cache (BETA)
               </div>
             </button>
           )}

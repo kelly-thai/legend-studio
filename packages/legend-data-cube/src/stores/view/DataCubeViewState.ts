@@ -63,7 +63,6 @@ export class DataCubeViewState {
   readonly initializeState = ActionState.create();
 
   private _source?: DataCubeSource | undefined;
-
   private _originalSource?: DataCubeSource | undefined;
 
   constructor(dataCube: DataCubeState) {
@@ -113,12 +112,13 @@ export class DataCubeViewState {
   }
 
   async initializeCache() {
+    this.initializeState.inProgress();
     const cachedSource = await this.engine.initializeCache(this.source);
     if (cachedSource !== undefined) {
       this._originalSource = this._source;
       this._source = cachedSource;
-      console.log('cache loaded');
     }
+    this.initializeState.pass();
   }
 
   async clearCache() {

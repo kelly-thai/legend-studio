@@ -352,6 +352,7 @@ export {
   getTDSRowRankByColumnInAsc,
   TabularDataSet,
   INTERNAL__TDSColumn,
+  TDSBuilder,
 } from './graph-manager/action/execution/ExecutionResult.js';
 export { ExecutionError } from './graph-manager/action/ExecutionError.js';
 export { ExternalFormatDescription } from './graph-manager/action/externalFormat/ExternalFormatDescription.js';

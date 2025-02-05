@@ -449,6 +449,7 @@ export class DataCubeGridClientServerSideDataSource
             `${rowData.length} rows, ${result.result.result.columns.length} columns`,
           ],
           ['SQL', result.executedSQL],
+          ['SQL Execution Time', result.executionTime],
         );
       }
 

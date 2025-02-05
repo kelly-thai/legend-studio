@@ -409,6 +409,9 @@ export const getWebAppBaseWebpackConfig = (
         ],
       }),
     ].filter(Boolean),
+    experiments: {
+      asyncWebAssembly: true,
+    },
   };
   return config;
 };

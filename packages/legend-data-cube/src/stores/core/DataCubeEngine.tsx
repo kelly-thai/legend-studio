@@ -98,6 +98,7 @@ export type DataCubeExecutionResult = {
   result: TDSExecutionResult;
   executedQuery: string;
   executedSQL: string;
+  executionTime: number;
 };
 
 /**
@@ -240,12 +241,12 @@ export abstract class DataCubeEngine {
 
   async initializeCache(
     source: DataCubeSource,
-  ): Promise<CachedDataCubeSource | void> {
-    return Promise.resolve();
+  ): Promise<CachedDataCubeSource | undefined> {
+    return undefined;
   }
 
-  async clearCache(): Promise<void> {
-    return Promise.resolve();
+  async clearCache() {
+    // do nothing
   }
 
   // ---------------------------------- APPLICATION ----------------------------------

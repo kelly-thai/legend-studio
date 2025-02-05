@@ -22,23 +22,18 @@ import {
   TDSRow,
   TabularDataSet,
 } from '@finos/legend-graph';
-import { action, makeObservable, observable } from 'mobx';
 import type { AsyncDuckDBConnection } from '@duckdb/duckdb-wasm';
+import { assertNonNullable } from '@finos/legend-shared';
 
 export class LegendDataCubeDataCubeCacheEngine {
-  db?: duckdb.AsyncDuckDB | undefined;
-  conn?: AsyncDuckDBConnection | undefined;
+  private _database?: duckdb.AsyncDuckDB | undefined;
+  private _connection?: AsyncDuckDBConnection | undefined;
 
-  constructor() {
-    makeObservable(this, {
-      db: observable,
-      initializeDuckDb: action,
-    });
-  }
-
-  async initializeDuckDb(result: TDSExecutionResult): Promise<void> {
+  // Documentation: https://duckdb.org/docs/api/wasm/instantiation.html
+  async initializeDuckDb(result: TDSExecutionResult) {
     const MANUAL_BUNDLES: duckdb.DuckDBBundles = {
       mvp: {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         mainModule: duckdb_wasm,
         mainWorker: new URL(
           '@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js',
@@ -46,6 +41,7 @@ export class LegendDataCubeDataCubeCacheEngine {
         ).toString(),
       },
       eh: {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         mainModule: duckdb_wasm_next,
         mainWorker: new URL(
           '@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js',
@@ -56,21 +52,22 @@ export class LegendDataCubeDataCubeCacheEngine {
     // Select a bundle based on browser checks
     const bundle = await duckdb.selectBundle(MANUAL_BUNDLES);
     // Instantiate the asynchronus version of DuckDB-wasm
-    const worker = new Worker(bundle.mainWorker!);
+    assertNonNullable(bundle.mainWorker, `Can't initialize duck db`);
+    const worker = new Worker(bundle.mainWorker);
     const logger = new duckdb.ConsoleLogger();
-    this.db = new duckdb.AsyncDuckDB(logger, worker);
-    await this.db.instantiate(bundle.mainModule, bundle.pthreadWorker);
-    this.conn = await this.db.connect();
+    this._database = new duckdb.AsyncDuckDB(logger, worker);
+    await this._database.instantiate(bundle.mainModule, bundle.pthreadWorker);
+    this._connection = await this._database.connect();
 
-    let columns: string[] = [];
+    const columns: string[] = [];
     result.builder.columns.forEach((col) =>
       columns.push(`"${col.name}" ${this.getDuckDbType(col.type)}`),
     );
 
     const CREATE_TABLE_SQL = `CREATE TABLE cached_tbl (${columns.join(',')})`;
-    await this.conn.query(CREATE_TABLE_SQL);
+    await this._connection.query(CREATE_TABLE_SQL);
 
-    let rowString: string[] = [];
+    const rowString: string[] = [];
 
     result.result.rows.forEach((row) => {
       const updatedRows = row.values.map((val) => {
@@ -86,30 +83,31 @@ export class LegendDataCubeDataCubeCacheEngine {
 
     const INSERT_TABLE_SQL = `INSERT INTO cached_tbl VALUES ${rowString.join(',')}`;
 
-    await this.conn.query(INSERT_TABLE_SQL);
-    return Promise.resolve();
+    await this._connection.query(INSERT_TABLE_SQL);
   }
 
   async runQuery(sql: string) {
-    const result = await this.conn?.query(sql);
+    const result = await this._connection?.query(sql);
     const columnNames = Object.keys(result?.toArray().at(0));
-    const result1 = result?.toArray().map((row) => {
+    const rows = result?.toArray().map((row) => {
       const values = new TDSRow();
-      values.values = columnNames.map((column) => row[column]);
+      values.values = columnNames.map(
+        (column) => row[column] as string | number | boolean | null,
+      );
       return values;
     });
     const tdsExecutionResult = new TDSExecutionResult();
     const tds = new TabularDataSet();
     tds.columns = columnNames;
-    tds.rows = result1!;
+    tds.rows = rows !== undefined ? rows : [new TDSRow()];
     tdsExecutionResult.result = tds;
     return tdsExecutionResult;
   }
 
   async clearDuckDb() {
-    await this.conn?.close();
-    await this.db?.flushFiles();
-    await this.db?.terminate();
+    await this._connection?.close();
+    await this._database?.flushFiles();
+    await this._database?.terminate();
   }
 
   private getDuckDbType(type: string | undefined): string {

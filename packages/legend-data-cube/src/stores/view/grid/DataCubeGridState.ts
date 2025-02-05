@@ -127,9 +127,13 @@ export class DataCubeGridState extends DataCubeQuerySnapshotController {
   async setCachingEnabled(val: boolean) {
     this.isCachingEnabled = val;
     if (this.isCachingEnabled) {
+      this._client?.setGridOption('loading', true);
       await this._view.initializeCache();
+      this._client?.setGridOption('loading', false);
     } else {
+      this._client?.setGridOption('loading', true);
       await this._view.clearCache();
+      this._client?.setGridOption('loading', false);
     }
   }
 
