@@ -206,6 +206,7 @@ export function V1_transformDataQualityRelationValidationConfiguration(
   protocol.validations = metamodel.validations.map((validation) =>
     V1_transformDataQualityRelationValidation(validation, context),
   );
+  protocol.runtime = metamodel.runtime;
   protocol.query = new V1_DataQualityRelationQueryLambda();
   protocol.query.body = metamodel.query.body;
   protocol.query.parameters = metamodel.query.parameters.map(

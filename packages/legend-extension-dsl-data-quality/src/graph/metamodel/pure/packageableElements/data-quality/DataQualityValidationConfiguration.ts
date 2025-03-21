@@ -24,6 +24,7 @@ import {
   type ParameterValue,
   type RawVariableExpression,
   type EXECUTION_SERIALIZATION_FORMAT,
+  type V1_PackageableElementPointer,
   PackageableElement,
   hashRawLambda,
 } from '@finos/legend-graph';
@@ -167,6 +168,7 @@ export class DataQualityRelationValidationConfiguration
 {
   query!: DataQualityRelationQueryLambda;
   validations: DataQualityRelationValidation[] = [];
+  runtime?: V1_PackageableElementPointer | undefined;
 
   protected override get _elementHashCode(): string {
     return hashArray([
