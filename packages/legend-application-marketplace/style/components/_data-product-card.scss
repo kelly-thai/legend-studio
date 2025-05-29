@@ -17,9 +17,16 @@
 @use 'mixins' as *;
 
 .legend-marketplace-light-data-product-card {
+  &__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
   &__type {
     width: fit-content;
     font-size: 2rem;
+    padding: 0.5rem 1rem;
 
     &--vendor {
       background: var(--color-light-blue-0);
@@ -36,10 +43,12 @@
     font-size: 2.8rem;
     font-weight: 400;
     margin: 4rem 0;
+    text-align: center;
   }
 
   &__description {
     font-size: 2rem;
     font-weight: 200;
+    display: none;
   }
 }

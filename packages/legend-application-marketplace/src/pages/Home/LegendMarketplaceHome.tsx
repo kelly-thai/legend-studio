@@ -113,7 +113,7 @@ export const LegendMarketplaceHome = observer(() => {
           columns={{ xs: 1, sm: 2, md: 3, xl: 6 }}
           sx={{ justifyContent: 'center' }}
         >
-          {shuffle(dataAssets).map((asset) => (
+          {store.marketplaceVendorDataState.homeDataProducts.map((asset) => (
             <Grid
               key={`${asset.provider}.${asset.type}.${asset.description}`}
               size={1}
