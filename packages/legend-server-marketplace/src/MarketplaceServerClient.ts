@@ -28,10 +28,21 @@ export interface MarketplaceServerClientConfig {
   subscriptionUrl: string;
 }
 
+interface ServerResult<T> {
+  data: T;
+  total_items: number;
+}
+
 interface MarketplaceServerResponse<T> {
   response_code: string;
   status: string;
   results: T;
+}
+
+interface MarketplaceServerVendorsResponse<T> {
+  response_code: string;
+  status: string;
+  results: ServerResult<T>;
 }
 
 export class MarketplaceServerClient extends AbstractServerClient {
@@ -62,10 +73,12 @@ export class MarketplaceServerClient extends AbstractServerClient {
     limit: number,
   ): Promise<PlainObject<ProviderResult>[]> =>
     (
-      await this.get<MarketplaceServerResponse<PlainObject<ProviderResult>[]>>(
+      await this.get<
+        MarketplaceServerVendorsResponse<PlainObject<ProviderResult>[]>
+      >(
         `${this.baseUrl}/v1/vendor/category?category=${category}&page_size=${limit}`,
       )
-    ).results;
+    ).results.data;
 
   // ------------------------------------------- Search- -------------------------------------------
 

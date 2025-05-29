@@ -129,6 +129,7 @@ export class LegendMarketPlaceVendorDataState {
         )
       ).map((json) => ProviderResult.serialization.fromJson(json));
     } catch (error) {
+      console.error('Error fetching vendors:', error);
       this.applicationStore.notificationService.notifyError(
         `Failed to fetch vendors: ${error}`,
       );
