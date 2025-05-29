@@ -31,6 +31,7 @@ export class ProviderResult {
   description!: string;
   price!: number;
   isOwned?: boolean;
+  profileId?: string;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(ProviderResult, {
@@ -41,6 +42,7 @@ export class ProviderResult {
       description: primitive(),
       price: primitive(),
       isOwned: optional(primitive()),
+      profileId: optional(primitive()),
     }),
   );
 }
