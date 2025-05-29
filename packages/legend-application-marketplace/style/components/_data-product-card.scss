@@ -17,16 +17,21 @@
 @use 'mixins' as *;
 
 .legend-marketplace-light-data-product-card {
+  //Vendor Data Home Page Card sccss is here
   &__content {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    position: relative;
   }
 
   &__type {
     width: fit-content;
     font-size: 2rem;
     padding: 0.5rem 1rem;
+    background-color: #eadcfc;
+    color: #6b30ab;
+    margin: auto;
+    text-align: center;
 
     &--vendor {
       background: var(--color-light-blue-0);
@@ -40,10 +45,12 @@
   }
 
   &__name {
-    font-size: 2.8rem;
+    font-size: 2.5rem;
     font-weight: 400;
     margin: 4rem 0;
     text-align: center;
+    padding: 1rem;
+    box-sizing: border-box;
   }
 
   &__description {
