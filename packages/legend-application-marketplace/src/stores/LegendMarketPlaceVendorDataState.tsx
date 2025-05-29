@@ -15,6 +15,7 @@
  */
 
 import {
+  DataProduct,
   ProviderResult,
   type LightDataProduct,
   type MarketplaceServerClient,
@@ -26,6 +27,7 @@ import type {
 } from './LegendMarketplaceBaseStore.js';
 import type { PlainObject } from '@finos/legend-shared';
 import { VendorDataProviderType } from '../pages/VendorData/LegendMarketplaceVendorData.js';
+import { DataAccessIcon } from '@finos/legend-art';
 
 export class LegendMarketPlaceVendorDataState {
   readonly applicationStore: LegendMarketplaceApplicationStore;
@@ -38,6 +40,8 @@ export class LegendMarketPlaceVendorDataState {
   terminalProviders: ProviderResult[] = [];
   terminalProvidersAsDataProducts: LightDataProduct[] = [];
   addOnProviders: ProviderResult[] = [];
+  dataProducts: DataProduct[] = [];
+  homeDataProducts: LightDataProduct[] = [];
 
   providerDisplayState: VendorDataProviderType = VendorDataProviderType.ALL;
 
@@ -53,6 +57,9 @@ export class LegendMarketPlaceVendorDataState {
       providerDisplayState: observable,
       setProviderDisplayState: observable,
       terminalProvidersAsDataProducts: observable,
+      dataProducts: observable,
+      homeDataProducts: observable,
+      populateDataProducts: observable,
     });
 
     this.applicationStore = applicationStore;
@@ -77,6 +84,23 @@ export class LegendMarketPlaceVendorDataState {
       .catch((error) => {
         this.applicationStore.notificationService.notifyError(
           `Failed to initialize vendors: ${error}`,
+        );
+      });
+
+    flowResult(this.populateDataProducts())
+      .then(() => {
+        this.homeDataProducts = this.dataProducts.map(
+          (product) =>
+            ({
+              description: product.description,
+              provider: product.productName,
+              type: product.provider,
+            }) as LightDataProduct,
+        );
+      })
+      .catch((error) => {
+        this.applicationStore.notificationService.notifyError(
+          `Failed to initialize data products: ${error}`,
         );
       });
   }
@@ -110,6 +134,20 @@ export class LegendMarketPlaceVendorDataState {
     } catch (error) {
       this.applicationStore.notificationService.notifyError(
         `Failed to fetch vendors: ${error}`,
+      );
+    }
+  }
+
+  *populateDataProducts() {
+    try {
+      this.dataProducts = (
+        (yield this.marketplaceServerClient.getDataProducts(
+          6,
+        )) as PlainObject<DataProduct>[]
+      ).map((json) => DataProduct.serialization.fromJson(json));
+    } catch (error) {
+      this.applicationStore.notificationService.notifyError(
+        `Failed to fetch data products: ${error}`,
       );
     }
   }

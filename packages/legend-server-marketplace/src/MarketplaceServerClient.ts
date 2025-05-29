@@ -16,7 +16,11 @@
 
 import { type PlainObject, AbstractServerClient } from '@finos/legend-shared';
 import type { LightProvider, ProviderResult } from './models/Provider.js';
-import type { DataProductSearchResult } from './models/DataProduct.js';
+import type {
+  DataProduct,
+  DataProductSearchResult,
+  LightDataProduct,
+} from './models/DataProduct.js';
 import type { Subscription } from './models/Subscription.js';
 
 export interface MarketplaceServerClientConfig {
@@ -59,7 +63,7 @@ export class MarketplaceServerClient extends AbstractServerClient {
   ): Promise<PlainObject<ProviderResult>[]> =>
     (
       await this.get<MarketplaceServerResponse<PlainObject<ProviderResult>[]>>(
-        `${this.baseUrl}/v1/vendor/category?category=${category}&limit=${limit}`,
+        `${this.baseUrl}/v1/vendor/category?category=${category}&page_size=${limit}`,
       )
     ).results;
 
@@ -90,4 +94,17 @@ export class MarketplaceServerClient extends AbstractServerClient {
         `${this.subscriptionUrl}/v1/service/subscription/${user}`,
       )
     ).subscription_feeds;
+
+  // ------------------------------------------- Data Products -----------------------------------------
+
+  private _dataProducts = (): string => `${this.baseUrl}/v1/products`;
+
+  getDataProducts = async (
+    page_size: number,
+  ): Promise<PlainObject<DataProduct>[]> =>
+    (
+      await this.get<MarketplaceServerResponse<PlainObject<DataProduct>[]>>(
+        `${this._dataProducts()}/?page_size=${page_size}`,
+      )
+    ).results;
 }

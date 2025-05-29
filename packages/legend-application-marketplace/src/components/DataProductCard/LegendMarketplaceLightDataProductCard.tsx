@@ -27,7 +27,7 @@ export const LegendMarketplaceLightDataProductCard = (props: {
   const { dataAsset, onClick } = props;
 
   const content = (
-    <>
+    <div className="legend-marketplace-light-data-product-card__content">
       <Chip
         label={dataAsset.type}
         className={clsx('legend-marketplace-light-data-product-card__type', {
@@ -43,7 +43,7 @@ export const LegendMarketplaceLightDataProductCard = (props: {
       <div className="legend-marketplace-light-data-product-card__description">
         {dataAsset.description}
       </div>
-    </>
+    </div>
   );
 
   const moreInfo = dataAsset.moreInfo ? (
