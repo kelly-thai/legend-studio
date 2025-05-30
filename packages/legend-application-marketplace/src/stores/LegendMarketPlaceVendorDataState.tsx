@@ -35,7 +35,7 @@ export class LegendMarketPlaceVendorDataState {
   readonly store: LegendMarketplaceBaseStore;
   marketplaceServerClient: MarketplaceServerClient;
 
-  responseLimit = 10;
+  responseLimit = 6;
 
   dataFeedProviders: ProviderResult[] = [];
   terminalProviders: ProviderResult[] = [];
