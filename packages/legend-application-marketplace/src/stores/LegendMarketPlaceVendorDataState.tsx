@@ -17,17 +17,17 @@
 import {
   DataProduct,
   ProviderResult,
+  type Filter,
   type LightDataProduct,
   type MarketplaceServerClient,
 } from '@finos/legend-server-marketplace';
-import { flow, makeObservable, observable } from 'mobx';
+import { flow, makeObservable, observable, reaction } from 'mobx';
 import type {
   LegendMarketplaceApplicationStore,
   LegendMarketplaceBaseStore,
 } from './LegendMarketplaceBaseStore.js';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { VendorDataProviderType } from '../pages/VendorData/LegendMarketplaceVendorData.js';
-import { DataAccessIcon } from '@finos/legend-art';
 
 export class LegendMarketPlaceVendorDataState {
   readonly applicationStore: LegendMarketplaceApplicationStore;
@@ -42,6 +42,7 @@ export class LegendMarketPlaceVendorDataState {
   addOnProviders: ProviderResult[] = [];
   dataProducts: DataProduct[] = [];
   homeDataProducts: LightDataProduct[] = [];
+  providersFilters: Filter[] = [];
 
   providerDisplayState: VendorDataProviderType = VendorDataProviderType.ALL;
 
@@ -61,6 +62,8 @@ export class LegendMarketPlaceVendorDataState {
       dataProducts: observable,
       homeDataProducts: observable,
       populateDataProducts: observable,
+      providersFilters: observable,
+      setProvidersFilters: observable,
     });
 
     this.applicationStore = applicationStore;
@@ -106,11 +109,19 @@ export class LegendMarketPlaceVendorDataState {
     this.providerDisplayState = value;
   }
 
+  setProvidersFilters(value: Filter[]): void {
+    this.providersFilters = value;
+  }
+
   async populateProviders(): Promise<void> {
     try {
+      let filters: string = this.providersFilters
+        .map((filter) => `&${filter.label}=${encodeURIComponent(filter.value)}`)
+        .join('');
       this.dataFeedProviders = (
         await this.marketplaceServerClient.getVendorsByCategory(
           encodeURIComponent('Periodic Datafeed'),
+          filters,
           this.responseLimit,
         )
       ).map((json) => ProviderResult.serialization.fromJson(json));
@@ -118,6 +129,7 @@ export class LegendMarketPlaceVendorDataState {
       this.terminalProviders = (
         await this.marketplaceServerClient.getVendorsByCategory(
           encodeURIComponent('Desktop'),
+          filters,
           this.responseLimit,
         )
       ).map((json) => ProviderResult.serialization.fromJson(json));
@@ -125,6 +137,7 @@ export class LegendMarketPlaceVendorDataState {
       this.addOnProviders = (
         await this.marketplaceServerClient.getVendorsByCategory(
           encodeURIComponent('Add-on'),
+          filters,
           this.responseLimit,
         )
       ).map((json) => ProviderResult.serialization.fromJson(json));

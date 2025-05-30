@@ -28,26 +28,27 @@ export const LegendMarketplaceLightDataProductCard = (props: {
 
   const content = (
     <div className="legend-marketplace-light-data-product-card__content">
-      <Chip
-        label={dataAsset.type}
-        className={clsx('legend-marketplace-light-data-product-card__type', {
-          'legend-marketplace-light-data-product-card__type--vendor':
-            dataAsset.type === 'vendor',
-          'legend-marketplace-light-data-product-card__type--curated':
-            dataAsset.type === 'curated',
-        })}
-      />
-      <div className="legend-marketplace-light-data-product-card__name">
-        {dataAsset.provider}
+      <div className="legend-marketplace-light-data-product-card__type-container">
+        <Chip
+          label={dataAsset.type}
+          className={clsx('legend-marketplace-light-data-product-card__type', {
+            'legend-marketplace-light-data-product-card__type--vendor':
+              dataAsset.type === 'vendor',
+            'legend-marketplace-light-data-product-card__type--curated':
+              dataAsset.type === 'curated',
+          })}
+        />
       </div>
-      <div className="legend-marketplace-light-data-product-card__description">
-        {dataAsset.description}
+      <div className="legend-marketplace-light-data-product-card__name-container">
+        <div className="legend-marketplace-light-data-product-card__name">
+          {dataAsset.provider}
+        </div>
       </div>
     </div>
   );
 
-  const moreInfo = dataAsset.moreInfo ? (
-    <div>{dataAsset.moreInfo}</div>
+  const moreInfo = dataAsset.description ? (
+    <div>{dataAsset.description}</div>
   ) : undefined;
 
   return (

@@ -70,13 +70,14 @@ export class MarketplaceServerClient extends AbstractServerClient {
 
   getVendorsByCategory = async (
     category: string,
+    filters: string,
     limit: number,
   ): Promise<PlainObject<ProviderResult>[]> =>
     (
       await this.get<
         MarketplaceServerVendorsResponse<PlainObject<ProviderResult>[]>
       >(
-        `${this.baseUrl}/v1/vendor/category?category=${category}&page_size=${limit}`,
+        `${this.baseUrl}/v1/vendor/category?category=${category}&page_size=${limit}${filters}`,
       )
     ).results.data;
 
