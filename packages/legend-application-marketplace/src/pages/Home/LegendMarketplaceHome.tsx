@@ -22,52 +22,10 @@ import {
   generateVendorDetailsRoute,
 } from '../../__lib__/LegendMarketplaceNavigation.js';
 import type { LightDataProduct } from '@finos/legend-server-marketplace';
-import { shuffle } from '@finos/legend-shared';
 import { LegendMarketplaceLightDataProductCard } from '../../components/DataProductCard/LegendMarketplaceLightDataProductCard.js';
 import { Grid2 as Grid } from '@mui/material';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 import { useLegendMarketplaceBaseStore } from '../../application/LegendMarketplaceFrameworkProvider.js';
-
-// Temporary placeholder data for assets
-
-const dataAssets: LightDataProduct[] = [
-  {
-    description: 'This is a test data asset',
-    provider: 'Vendor 1',
-    type: 'vendor',
-    moreInfo: 'More information about the test data asset',
-  },
-  {
-    description: 'This is another test data asset',
-    provider: 'Vendor 2',
-    type: 'curated',
-    moreInfo: 'More information about the test2 data asset',
-  },
-  {
-    description: 'This is a third test data asset',
-    provider: 'Vendor 3',
-    type: 'vendor',
-    moreInfo: 'More information about the test3 data asset',
-  },
-  {
-    description: 'This is a fourth test data asset',
-    provider: 'Vendor 4',
-    type: 'curated',
-    moreInfo: 'More information about the test4 data asset',
-  },
-  {
-    description: 'This is a fifth test data asset',
-    provider: 'Vendor 5',
-    type: 'vendor',
-    moreInfo: 'More information about the test5 data asset',
-  },
-  {
-    description: 'This is a sixth test data asset',
-    provider: 'Vendor 6',
-    type: 'curated',
-    moreInfo: '',
-  },
-];
 
 export const LegendMarketplaceHome = observer(() => {
   const applicationStore = useApplicationStore();

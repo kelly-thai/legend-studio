@@ -28,7 +28,6 @@ import type {
 } from './LegendMarketplaceBaseStore.js';
 import type { PlainObject } from '@finos/legend-shared';
 import { VendorDataProviderType } from '../pages/VendorData/LegendMarketplaceVendorData.js';
-import { DataAccessIcon } from '@finos/legend-art';
 
 export class LegendMarketPlaceVendorDataState {
   readonly applicationStore: LegendMarketplaceApplicationStore;
@@ -112,9 +111,21 @@ export class LegendMarketPlaceVendorDataState {
       () =>
         this.providersFilters.map(
           (filter) => `${filter.label}:${filter.value}`,
-        ), // Track changes in filters
+        ),
       () => {
-        flowResult(this.populateProviders()); // Execute populateProviders when filters change
+        flowResult(this.populateProviders())
+          .then(() => {
+            this.applicationStore.notificationService.notifySuccess(
+              'Providers populated successfully.',
+            );
+          })
+          .catch((error) => {
+            this.applicationStore.notificationService.notifyError(
+              `Failed to populate providers: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            );
+          });
       },
     );
   }
@@ -129,7 +140,7 @@ export class LegendMarketPlaceVendorDataState {
 
   *populateProviders() {
     try {
-      let filters: string = this.providersFilters
+      const filters: string = this.providersFilters
         .map((filter) => `&${filter.label}=${encodeURIComponent(filter.value)}`)
         .join('');
       this.dataFeedProviders = (
@@ -156,7 +167,6 @@ export class LegendMarketPlaceVendorDataState {
         )) as PlainObject<ProviderResult>[]
       ).map((json) => ProviderResult.serialization.fromJson(json));
     } catch (error) {
-      console.error('Error fetching vendors:', error);
       this.applicationStore.notificationService.notifyError(
         `Failed to fetch vendors: ${error}`,
       );

@@ -19,7 +19,6 @@ import type { LightProvider, ProviderResult } from './models/Provider.js';
 import type {
   DataProduct,
   DataProductSearchResult,
-  LightDataProduct,
 } from './models/DataProduct.js';
 import type { Subscription } from './models/Subscription.js';
 

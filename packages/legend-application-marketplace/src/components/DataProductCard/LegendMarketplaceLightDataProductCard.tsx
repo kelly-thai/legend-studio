@@ -50,7 +50,7 @@ export const LegendMarketplaceLightDataProductCard = (props: {
   const moreInfo = dataAsset.description ? (
     <div className="legend-marketplace-light-data-product-card__description">
       {dataAsset.description.split(' ').length > 40
-        ? dataAsset.description.split(' ').slice(0, 40).join(' ') + '...'
+        ? `${dataAsset.description.split(' ').slice(0, 40).join(' ')}...`
         : dataAsset.description}
     </div>
   ) : undefined;
