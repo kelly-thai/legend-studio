@@ -17,15 +17,14 @@
 @use 'mixins' as *;
 
 .legend-marketplace-light-data-product-card {
-  //Vendor Data Home Page Card sccss is here
-
   position: relative;
 
   &__content {
     display: flex;
     flex-direction: column;
     position: relative;
-    overflow: hidden; /* Prevent content overflow */
+    overflow: hidden;
+    gap: 2rem;
   }
 
   &__type-container {
@@ -63,14 +62,15 @@
     font-weight: 500;
     text-align: center;
     box-sizing: border-box;
-    overflow: hidden; /* Prevent overflow */
+    overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
   }
 
   &__description {
     font-size: 1.8rem;
-    font-weight: 200;
+    font-weight: 400;
     color: var(--color-dark-grey-800);
+    align-items: center;
   }
 }
