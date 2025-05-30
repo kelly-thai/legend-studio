@@ -18,10 +18,19 @@
 
 .legend-marketplace-light-data-product-card {
   //Vendor Data Home Page Card sccss is here
+
+  position: relative;
+
   &__content {
     display: flex;
     flex-direction: column;
     position: relative;
+    overflow: hidden; /* Prevent content overflow */
+  }
+
+  &__type-container {
+    margin-bottom: 1rem;
+    text-align: center;
   }
 
   &__type {
@@ -44,18 +53,24 @@
     }
   }
 
-  &__name {
-    font-size: 2.5rem;
-    font-weight: 400;
-    margin: 4rem 0;
+  &__name-container {
+    margin-bottom: 1rem;
     text-align: center;
-    padding: 1rem;
+  }
+
+  &__name {
+    font-size: 2.2rem;
+    font-weight: 500;
+    text-align: center;
     box-sizing: border-box;
+    overflow: hidden; /* Prevent overflow */
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
 
   &__description {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 200;
-    display: none;
+    color: var(--color-dark-grey-800);
   }
 }

@@ -17,10 +17,11 @@
 import {
   DataProduct,
   ProviderResult,
+  type Filter,
   type LightDataProduct,
   type MarketplaceServerClient,
 } from '@finos/legend-server-marketplace';
-import { flowResult, makeObservable, observable } from 'mobx';
+import { flowResult, makeObservable, observable, reaction } from 'mobx';
 import type {
   LegendMarketplaceApplicationStore,
   LegendMarketplaceBaseStore,
@@ -42,6 +43,7 @@ export class LegendMarketPlaceVendorDataState {
   addOnProviders: ProviderResult[] = [];
   dataProducts: DataProduct[] = [];
   homeDataProducts: LightDataProduct[] = [];
+  providersFilters: Filter[] = [];
 
   providerDisplayState: VendorDataProviderType = VendorDataProviderType.ALL;
 
@@ -60,6 +62,8 @@ export class LegendMarketPlaceVendorDataState {
       dataProducts: observable,
       homeDataProducts: observable,
       populateDataProducts: observable,
+      providersFilters: observable,
+      setProvidersFilters: observable,
     });
 
     this.applicationStore = applicationStore;
@@ -103,17 +107,35 @@ export class LegendMarketPlaceVendorDataState {
           `Failed to initialize data products: ${error}`,
         );
       });
+
+    reaction(
+      () =>
+        this.providersFilters.map(
+          (filter) => `${filter.label}:${filter.value}`,
+        ), // Track changes in filters
+      () => {
+        flowResult(this.populateProviders()); // Execute populateProviders when filters change
+      },
+    );
   }
 
   setProviderDisplayState(value: VendorDataProviderType): void {
     this.providerDisplayState = value;
   }
 
+  setProvidersFilters(value: Filter[]): void {
+    this.providersFilters = value;
+  }
+
   *populateProviders() {
     try {
+      let filters: string = this.providersFilters
+        .map((filter) => `&${filter.label}=${encodeURIComponent(filter.value)}`)
+        .join('');
       this.dataFeedProviders = (
         (yield this.marketplaceServerClient.getVendorsByCategory(
           encodeURIComponent('Periodic Datafeed'),
+          filters,
           this.responseLimit,
         )) as PlainObject<ProviderResult>[]
       ).map((json) => ProviderResult.serialization.fromJson(json));
@@ -121,6 +143,7 @@ export class LegendMarketPlaceVendorDataState {
       this.terminalProviders = (
         (yield this.marketplaceServerClient.getVendorsByCategory(
           encodeURIComponent('Desktop'),
+          filters,
           this.responseLimit,
         )) as PlainObject<ProviderResult>[]
       ).map((json) => ProviderResult.serialization.fromJson(json));
@@ -128,6 +151,7 @@ export class LegendMarketPlaceVendorDataState {
       this.addOnProviders = (
         (yield this.marketplaceServerClient.getVendorsByCategory(
           encodeURIComponent('Add-on'),
+          filters,
           this.responseLimit,
         )) as PlainObject<ProviderResult>[]
       ).map((json) => ProviderResult.serialization.fromJson(json));
