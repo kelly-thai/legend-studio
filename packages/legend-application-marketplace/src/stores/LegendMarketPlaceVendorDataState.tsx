@@ -21,7 +21,7 @@ import {
   type LightDataProduct,
   type MarketplaceServerClient,
 } from '@finos/legend-server-marketplace';
-import { flow, makeObservable, observable, reaction } from 'mobx';
+import { flow, flowResult, makeObservable, observable, reaction } from 'mobx';
 import type {
   LegendMarketplaceApplicationStore,
   LegendMarketplaceBaseStore,
@@ -103,6 +103,29 @@ export class LegendMarketPlaceVendorDataState {
         `Failed to initialize data products: ${error}`,
       );
     }
+
+    reaction(
+      () =>
+        this.providersFilters.map(
+          (filter) => `${filter.label}:${filter.value}`,
+        ),
+      () => {
+        (async () => {
+          try {
+            await flowResult(this.populateProviders());
+            this.applicationStore.notificationService.notifySuccess(
+              'Providers populated successfully.',
+            );
+          } catch (error) {
+            this.applicationStore.notificationService.notifyError(
+              `Failed to populate providers: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            );
+          }
+        })();
+      },
+    );
   }
 
   setProviderDisplayState(value: VendorDataProviderType): void {
@@ -115,7 +138,7 @@ export class LegendMarketPlaceVendorDataState {
 
   async populateProviders(): Promise<void> {
     try {
-      let filters: string = this.providersFilters
+      const filters: string = this.providersFilters
         .map((filter) => `&${filter.label}=${encodeURIComponent(filter.value)}`)
         .join('');
       this.dataFeedProviders = (
@@ -142,7 +165,6 @@ export class LegendMarketPlaceVendorDataState {
         )
       ).map((json) => ProviderResult.serialization.fromJson(json));
     } catch (error) {
-      console.error('Error fetching vendors:', error);
       this.applicationStore.notificationService.notifyError(
         `Failed to fetch vendors: ${error}`,
       );

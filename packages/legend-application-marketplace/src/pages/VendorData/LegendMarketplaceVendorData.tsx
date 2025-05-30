@@ -244,7 +244,7 @@ export const LegendMarketplaceVendorData = observer(() => {
     query: string | undefined,
   ) => {
     // Handle search logic here
-    let filters: Filter[] = [];
+    const filters: Filter[] = [];
     if (provider) {
       filters.push({
         label: 'provider',
