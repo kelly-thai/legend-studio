@@ -72,7 +72,7 @@ const DataProductHeader = observer(
             title={`${dataProudct.name} - ${dataProudct.path}`}
           >
             <div className="data-space__viewer__header__title__label">
-              {dataProudct.name}
+              {dataProudct.title}
             </div>
             {dataProductViewerState.isVerified && (
               <div
