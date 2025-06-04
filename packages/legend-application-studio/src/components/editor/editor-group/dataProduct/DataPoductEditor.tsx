@@ -17,6 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
+  AccessPointGroupState,
   DataProductEditorState,
   generateUrlToDeployOnOpen,
   LakehouseAccessPointState,
@@ -48,6 +49,7 @@ import {
   MenuContent,
   MenuContentItem,
   CaretDownIcon,
+  WarningIcon,
 } from '@finos/legend-art';
 import React, { useRef, useState, useEffect } from 'react';
 import { filterByType } from '@finos/legend-shared';
@@ -57,10 +59,12 @@ import { useAuth } from 'react-oidc-context';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
+  AccessPointGroup,
   LakehouseTargetEnv,
   type LakehouseAccessPoint,
 } from '@finos/legend-graph';
 import {
+  accessPointGroup_setDescription,
   dataProduct_setDescription,
   dataProduct_setTitle,
 } from '../../../../stores/graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
@@ -178,18 +182,24 @@ const NewAccessPointAccessPOint = observer(
 );
 
 interface DescriptionTextAreaProps {
-  accessPoint: LakehouseAccessPoint;
+  accessPoint: LakehouseAccessPoint | AccessPointGroup;
   handleMouseOver: (event: React.MouseEvent<HTMLDivElement>) => void;
   handleMouseOut: (event: React.MouseEvent<HTMLDivElement>) => void;
+  className?: string;
 }
 
 const DescriptionTextArea: React.FC<DescriptionTextAreaProps> = ({
   accessPoint,
   handleMouseOver,
   handleMouseOut,
+  className,
 }) => {
   return (
-    <div onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+    <div
+      onMouseOver={handleMouseOver}
+      onMouseOut={handleMouseOut}
+      className={clsx(className)}
+    >
       {accessPoint.description}
     </div>
   );
@@ -204,6 +214,7 @@ const hoverIcon = () => {
 };
 
 export const LakehouseDataProductAcccessPointEditor = observer(
+  //KXT
   (props: {
     accessPointState: LakehouseAccessPointState;
     isReadOnly: boolean;
@@ -444,6 +455,97 @@ const DataProductDeploymentResponseModal = observer(
   },
 );
 
+const AccessPointGroupSection = observer(
+  //KXT
+  (props: { groupState: AccessPointGroupState; isReadOnly: boolean }) => {
+    const { groupState, isReadOnly } = props;
+    const [editingDescription, setEditingDescription] = useState(false);
+    const [isHovering, setIsHovering] = useState(false);
+
+    const handleEdit = () => setEditingDescription(true);
+    const handleBlur = () => {
+      setEditingDescription(false);
+      setIsHovering(false);
+    };
+    const handleMouseOver: React.MouseEventHandler<HTMLDivElement> = () => {
+      setIsHovering(true);
+    };
+    const handleMouseOut: React.MouseEventHandler<HTMLDivElement> = () => {
+      setIsHovering(false);
+    };
+
+    const updateGroupDescription = (
+      groupState: AccessPointGroupState,
+      val: string,
+    ): void => {
+      accessPointGroup_setDescription(groupState.value, val);
+    };
+    return (
+      <div
+        key={groupState.value.id}
+        className="access-point-editor__group-container"
+      >
+        <div className="access-point-editor__group-container__title">
+          {groupState.value.id}
+        </div>
+        {editingDescription ? (
+          <textarea
+            className="panel__content__form__section__input"
+            spellCheck={false}
+            value={groupState.value.description ?? ''}
+            onChange={(event) =>
+              updateGroupDescription(groupState, event.target.value)
+            }
+            placeholder="Provide a description for this Access Point Group"
+            onBlur={handleBlur}
+            style={{
+              overflow: 'hidden',
+              resize: 'none',
+              padding: '0.25rem',
+              margin: '0 1rem',
+            }}
+          />
+        ) : (
+          <div
+            onClick={handleEdit}
+            title="Click to edit description"
+            className="access-point-editor__description-container"
+          >
+            {groupState.value.description ? (
+              <DescriptionTextArea
+                accessPoint={groupState.value}
+                handleMouseOver={handleMouseOver}
+                handleMouseOut={handleMouseOut}
+                className="access-point-editor__group-container__description"
+              />
+            ) : (
+              <div
+                className="access-point-editor__group-container__description--warning"
+                onMouseOver={handleMouseOver}
+                onMouseOut={handleMouseOut}
+                style={{ paddingLeft: '1rem' }}
+              >
+                <WarningIcon />
+                No description provided
+              </div>
+            )}
+            {isHovering && hoverIcon()}
+          </div>
+        )}
+        {groupState.accessPointStates
+          .filter(filterByType(LakehouseAccessPointState))
+          .map((apState) => (
+            <LakehouseDataProductAcccessPointEditor
+              key={apState.accessPoint.id}
+              isReadOnly={isReadOnly}
+              accessPointState={apState}
+            />
+          ))}
+      </div>
+    );
+  },
+);
+
 export const DataProductEditor = observer(() => {
   const editorStore = useEditorStore();
   const dataProductEditorState =
@@ -565,38 +667,25 @@ export const DataProductEditor = observer(() => {
               </PanelHeaderActionItem>
             </PanelHeaderActions>
           </PanelHeader>
-          <div style={{ overflow: 'auto' }}>
-            <PanelContent>
+          <PanelContent>
+            <div style={{ overflow: 'auto' }}>
               {dataProductEditorState.accessPointGroupStates.map(
                 (groupState) => (
-                  <div
+                  <AccessPointGroupSection
                     key={groupState.value.id}
-                    className="access-point-editor__group-container"
-                  >
-                    <div className="access-point-editor__group-container__title">
-                      <div className="panel__header__title__content">
-                        {groupState.value.id}
-                      </div>
-                    </div>
-                    {groupState.accessPointStates
-                      .filter(filterByType(LakehouseAccessPointState))
-                      .map((apState) => (
-                        <LakehouseDataProductAcccessPointEditor
-                          key={apState.accessPoint.id}
-                          isReadOnly={isReadOnly}
-                          accessPointState={apState}
-                        />
-                      ))}
-                  </div>
+                    groupState={groupState}
+                    isReadOnly={isReadOnly}
+                  />
                 ),
               )}
-              {!accessPointStates.length && (
-                <DataProductEditorSplashScreen
-                  dataProductEditorState={dataProductEditorState}
-                />
-              )}
-            </PanelContent>
-          </div>
+            </div>
+            {!accessPointStates.length && (
+              <DataProductEditorSplashScreen
+                dataProductEditorState={dataProductEditorState}
+              />
+            )}
+          </PanelContent>
+
           {dataProductEditorState.accessPointModal && (
             <NewAccessPointAccessPOint
               dataProductEditorState={dataProductEditorState}
