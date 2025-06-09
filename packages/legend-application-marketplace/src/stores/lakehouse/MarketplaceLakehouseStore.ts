@@ -71,11 +71,7 @@ import {
 import { DataProductViewerState } from './DataProductViewerState.js';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl } from '../../__lib__/LegendMarketplaceNavigation.js';
 import type { AuthContextProps } from 'react-oidc-context';
-import type {
-  LakehouseContractServerClient,
-  LakehouseIngestServerClient,
-  LakehousePlatformServerClient,
-} from '@finos/legend-server-marketplace';
+import type { LakehouseContractServerClient } from '@finos/legend-server-marketplace';
 import {
   DataProductEntity,
   DataProductState,
@@ -83,6 +79,10 @@ import {
   type BaseDataProductState,
 } from './dataProducts/DataProducts.js';
 import { TMP__DummyDataProducts } from '../../pages/Lakehouse/TMP__Data/TMP__DummyDataProducts.js';
+import type {
+  LakehouseIngestDeploymentServerClient,
+  LakehouseIngestDiscoveryServerClient,
+} from '@finos/legend-server-lakehouse';
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
 
@@ -134,8 +134,8 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   readonly applicationStore: LegendMarketplaceApplicationStore;
   readonly depotServerClient: DepotServerClient;
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
-  readonly lakehousePlatformServerClient: LakehousePlatformServerClient;
-  readonly lakehouseIngestServerClient: LakehouseIngestServerClient;
+  readonly lakehousePlatformServerClient: LakehouseIngestDiscoveryServerClient;
+  readonly lakehouseIngestServerClient: LakehouseIngestDeploymentServerClient;
   // To consolidate all versions of a data product, we use a map from group:artifact:path to a DataProductState object, which contains
   // a map of all the verions of the data product.
   productStatesMap: Map<string, DataProductState>;
@@ -171,8 +171,8 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
   constructor(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
     lakehouseServerClient: LakehouseContractServerClient,
-    lakehousePlatformServerClient: LakehousePlatformServerClient,
-    lakehouseIngestServerClient: LakehouseIngestServerClient,
+    lakehousePlatformServerClient: LakehouseIngestDiscoveryServerClient,
+    lakehouseIngestServerClient: LakehouseIngestDeploymentServerClient,
     depotServerClient: DepotServerClient,
   ) {
     this.marketplaceBaseStore = marketplaceBaseStore;

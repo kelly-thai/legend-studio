@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-export * from './models/DataProduct.js';
-export * from './models/Provider.js';
-export * from './models/Subscription.js';
-
-export { LakehouseContractServerClient } from './LakehouseContractServerClient.js';
-export { MarketplaceServerClient } from './MarketplaceServerClient.js';
+export * from './models/IngestDeploymentServerConfig.js';
+export * from './models/LakehouseIngestionDeploymentResponse.js';
+export * from './models/AdhocDataProductDeployResponse.js';
+export * from './LakehouseIngestDeploymentServerClient.js';
+export * from './LakehouseIngestDiscoveryServerClient.js';
+export * from './LakehouseIngestionManager.js';

@@ -30,8 +30,6 @@ import { flow, makeObservable } from 'mobx';
 import { DepotServerClient } from '@finos/legend-server-depot';
 import {
   LakehouseContractServerClient,
-  LakehouseIngestServerClient,
-  LakehousePlatformServerClient,
   MarketplaceServerClient,
 } from '@finos/legend-server-marketplace';
 import {
@@ -43,6 +41,10 @@ import type { LegendMarketplaceApplicationConfig } from '../application/LegendMa
 import type { LegendMarketplacePluginManager } from '../application/LegendMarketplacePluginManager.js';
 import { LegendMarketplaceEventHelper } from '../__lib__/LegendMarketplaceEventHelper.js';
 import { LegendMarketPlaceVendorDataState } from './LegendMarketPlaceVendorDataState.js';
+import {
+  LakehouseIngestDeploymentServerClient,
+  LakehouseIngestDiscoveryServerClient,
+} from '@finos/legend-server-lakehouse';
 
 export type LegendMarketplaceApplicationStore = ApplicationStore<
   LegendMarketplaceApplicationConfig,
@@ -55,9 +57,9 @@ export class LegendMarketplaceBaseStore {
   readonly depotServerClient: DepotServerClient;
   readonly lakehouseServerClient: LakehouseContractServerClient | undefined;
   readonly lakehousePlatformServerClient:
-    | LakehousePlatformServerClient
+    | LakehouseIngestDiscoveryServerClient
     | undefined;
-  readonly lakehouseIngestServerClient: LakehouseIngestServerClient;
+  readonly lakehouseIngestServerClient: LakehouseIngestDeploymentServerClient;
   readonly pluginManager: LegendMarketplacePluginManager;
   readonly engineServerClient: V1_EngineServerClient;
   readonly remoteEngine: V1_RemoteEngine;
@@ -104,16 +106,18 @@ export class LegendMarketplaceBaseStore {
 
     if (this.applicationStore.config.lakehousePlatformUrl) {
       // lakehouse platform
-      this.lakehousePlatformServerClient = new LakehousePlatformServerClient({
-        baseUrl: this.applicationStore.config.lakehousePlatformUrl,
-      });
+      this.lakehousePlatformServerClient =
+        new LakehouseIngestDiscoveryServerClient(
+          this.applicationStore.config.lakehousePlatformUrl,
+        );
       this.lakehousePlatformServerClient.setTracerService(
         this.applicationStore.tracerService,
       );
     }
 
     // lakehouse ingest
-    this.lakehouseIngestServerClient = new LakehouseIngestServerClient();
+    this.lakehouseIngestServerClient =
+      new LakehouseIngestDeploymentServerClient(undefined);
     this.lakehouseIngestServerClient.setTracerService(
       this.applicationStore.tracerService,
     );
