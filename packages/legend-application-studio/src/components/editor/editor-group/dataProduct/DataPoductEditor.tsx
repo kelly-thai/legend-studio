@@ -53,7 +53,12 @@ import {
   WarningIcon,
   PanelFormSection,
 } from '@finos/legend-art';
-import React, { useRef, useState, useEffect } from 'react';
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  type ChangeEventHandler,
+} from 'react';
 import { filterByType } from '@finos/legend-shared';
 import { InlineLambdaEditor } from '@finos/legend-query-builder';
 import { action, flowResult } from 'mobx';
@@ -906,8 +911,10 @@ export const DataProductEditor = observer(() => {
   const updateDataProductTitle = (val: string | undefined): void => {
     dataProduct_setTitle(product, val ?? '');
   };
-  const updateDataProductDescription = (val: string | undefined): void => {
-    dataProduct_setDescription(product, val ?? '');
+  const updateDataProductDescription: ChangeEventHandler<
+    HTMLTextAreaElement
+  > = (event) => {
+    dataProduct_setDescription(product, event.target.value ?? '');
   };
 
   const updateSupportInfoDocumentationUrl = (val: string | undefined): void => {
@@ -1069,13 +1076,27 @@ export const DataProductEditor = observer(() => {
             update={updateDataProductTitle}
             placeholder="Enter title"
           />
-          <PanelFormTextField
-            name="Description"
-            value={product.description}
-            prompt="Provide a description for this Lakehouse Data Product."
-            update={updateDataProductDescription}
-            placeholder="Enter description"
-          />
+          <div style={{ margin: '1rem' }}>
+            <div className="panel__content__form__section__header__label">
+              Description
+            </div>
+            <div className="panel__content__form__section__header__prompt">
+              Provide a description for this Lakehouse Data Product.
+            </div>
+            <textarea
+              className="panel__content__form__section__textarea"
+              spellCheck={false}
+              disabled={isReadOnly}
+              value={product.description}
+              onChange={updateDataProductDescription}
+              style={{
+                padding: '0.5rem',
+                width: '45rem',
+                maxWidth: '45rem !important',
+              }}
+            />
+          </div>
+
           <PanelFormSection>
             <div className="panel__content__form__section__header__label">
               Support Information
