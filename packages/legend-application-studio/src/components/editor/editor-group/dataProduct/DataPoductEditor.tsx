@@ -18,6 +18,7 @@ import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type AccessPointGroupState,
+  DATA_PRODUCT_TAB,
   DataProductEditorState,
   generateUrlToDeployOnOpen,
   LakehouseAccessPointState,
@@ -65,7 +66,7 @@ import { action, flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
-import { LakehouseTargetEnv, Email } from '@finos/legend-graph';
+import { LakehouseTargetEnv, Email, DataProduct } from '@finos/legend-graph';
 import {
   accessPointGroup_setDescription,
   accessPointGroup_setName,
@@ -708,7 +709,7 @@ const DataProductDeploymentResponseModal = observer(
   },
 );
 
-const AccessPointGroupSection = observer(
+const AccessPointGroupCard = observer(
   (props: { groupState: AccessPointGroupState; isReadOnly: boolean }) => {
     const { groupState, isReadOnly } = props;
     const editorStore = useEditorStore();
@@ -900,6 +901,255 @@ const AccessPointGroupSection = observer(
   },
 );
 
+const AccessPointGroupTab = observer(
+  (props: {
+    dataProductEditorState: DataProductEditorState;
+    isReadOnly: boolean;
+  }) => {
+    const { dataProductEditorState, isReadOnly } = props;
+    const accessPointStates = dataProductEditorState.accessPointGroupStates
+      .map((e) => e.accessPointStates)
+      .flat();
+    const openNewModal = () => {
+      dataProductEditorState.setAccessPointGroupModal(true);
+    };
+
+    return (
+      <div className="panel" style={{ overflow: 'auto' }}>
+        <PanelHeader>
+          <div className="panel__header__title">
+            <div className="panel__header__title__label">
+              access point groups
+            </div>
+          </div>
+          <PanelHeaderActions>
+            <PanelHeaderActionItem
+              className="panel__header__action"
+              onClick={openNewModal}
+              disabled={isReadOnly}
+              title="Create new access point group"
+            >
+              <PlusIcon />
+            </PanelHeaderActionItem>
+          </PanelHeaderActions>
+        </PanelHeader>
+        <PanelContent>
+          <div
+            style={{ overflow: 'auto', margin: '1rem', marginLeft: '1.5rem' }}
+          >
+            {dataProductEditorState.accessPointGroupStates.map(
+              (groupState) =>
+                groupState.accessPointStates.length > 0 && ( //KXT TODO allow empty groups
+                  <AccessPointGroupCard
+                    key={groupState.uuid}
+                    groupState={groupState}
+                    isReadOnly={isReadOnly}
+                  />
+                ),
+            )}
+          </div>
+          {!accessPointStates.length && (
+            <DataProductEditorSplashScreen
+              dataProductEditorState={dataProductEditorState}
+            />
+          )}
+        </PanelContent>
+        {dataProductEditorState.accessPointGroupModal && (
+          <NewAccessPointGroupModal
+            dataProductEditorState={dataProductEditorState}
+          />
+        )}
+        {dataProductEditorState.deployResponse && (
+          <DataProductDeploymentResponseModal state={dataProductEditorState} />
+        )}
+      </div>
+    );
+  },
+);
+
+const GeneralTab = observer(
+  (props: { product: DataProduct; isReadOnly: boolean }) => {
+    const { product, isReadOnly } = props;
+    const updateDataProductTitle = (val: string | undefined): void => {
+      dataProduct_setTitle(product, val ?? '');
+    };
+    const updateDataProductDescription = (val: string | undefined): void => {
+      dataProduct_setDescription(product, val ?? '');
+    };
+
+    const updateSupportInfoDocumentationUrl = (
+      val: string | undefined,
+    ): void => {
+      dataProduct_setSupportInfoIfAbsent(product);
+      if (product.supportInfo) {
+        supportInfo_setDocumentationUrl(product.supportInfo, val ?? '');
+      }
+    };
+
+    const updateSupportInfoWebsite = (val: string | undefined): void => {
+      dataProduct_setSupportInfoIfAbsent(product);
+      if (product.supportInfo) {
+        supportInfo_setWebsite(product.supportInfo, val ?? '');
+      }
+    };
+
+    const updateSupportInfoFaqUrl = (val: string | undefined): void => {
+      dataProduct_setSupportInfoIfAbsent(product);
+      if (product.supportInfo) {
+        supportInfo_setFaqUrl(product.supportInfo, val ?? '');
+      }
+    };
+
+    const updateSupportInfoSupportUrl = (val: string | undefined): void => {
+      dataProduct_setSupportInfoIfAbsent(product);
+      if (product.supportInfo) {
+        supportInfo_setSupportUrl(product.supportInfo, val ?? '');
+      }
+    };
+
+    const handleSupportInfoEmailAdd = (
+      address: string,
+      title: string,
+    ): void => {
+      dataProduct_setSupportInfoIfAbsent(product);
+      if (product.supportInfo) {
+        supportInfo_addEmail(product.supportInfo, new Email(address, title));
+      }
+    };
+
+    const handleSupportInfoEmailRemove = (email: Email): void => {
+      if (product.supportInfo) {
+        supportInfo_deleteEmail(product.supportInfo, email);
+      }
+    };
+
+    const SupportEmailComponent = observer(
+      (props: { item: Email }): React.ReactElement => {
+        const { item } = props;
+
+        return (
+          <div className="panel__content__form__section__list__item__rows">
+            <div className="row">
+              <label className="label">Address</label>
+              <div className="textbox">{item.address}</div>
+            </div>
+            <div className="row">
+              <label className="label">Title</label>
+              <div className="textbox">{item.title}</div>
+            </div>
+          </div>
+        );
+      },
+    );
+
+    const NewSupportEmailComponent = observer(
+      (props: { onFinishEditing: () => void }) => {
+        const { onFinishEditing } = props;
+        const [address, setAddress] = useState('');
+        const [title, setTitle] = useState('');
+
+        return (
+          <div className="data-product-editor__support-info__new-email">
+            <div className="panel__content__form__section__list__new-item__input">
+              <input
+                className="input input-group__input panel__content__form__section__input input--dark"
+                type="email"
+                placeholder="Enter email"
+                value={address}
+                onChange={(event) => {
+                  setAddress(event.target.value);
+                }}
+              />
+            </div>
+            <div className="panel__content__form__section__list__new-item__input">
+              <input
+                className="input input-group__input panel__content__form__section__input input--dark"
+                type="title"
+                placeholder="Enter title"
+                value={title}
+                onChange={(event) => {
+                  setTitle(event.target.value);
+                }}
+              />
+            </div>
+            <button
+              className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+              onClick={() => {
+                handleSupportInfoEmailAdd(address, title);
+                setAddress('');
+                setTitle('');
+                onFinishEditing();
+              }}
+            >
+              Save
+            </button>
+          </div>
+        );
+      },
+    );
+    return (
+      <div className="panel" style={{ padding: '1rem', flex: 0 }}>
+        <PanelFormTextField
+          name="Title"
+          value={product.title}
+          prompt="Provide a title for this Lakehouse Data Product."
+          update={updateDataProductTitle}
+          placeholder="Enter title"
+        />
+        <PanelFormTextField
+          name="Description"
+          value={product.description}
+          prompt="Provide a description for this Lakehouse Data Product."
+          update={updateDataProductDescription}
+          placeholder="Enter description"
+        />
+        <PanelFormSection>
+          <div className="panel__content__form__section__header__label">
+            Support Information
+          </div>
+          <div className="panel__content__form__section__header__prompt">
+            Configure support information for this Lakehouse Data Product.
+          </div>
+          <PanelFormTextField
+            name="Documentation URL"
+            value={product.supportInfo?.documentationUrl ?? ''}
+            update={updateSupportInfoDocumentationUrl}
+            placeholder="Enter Documentation URL"
+          />
+          <PanelFormTextField
+            name="Website"
+            value={product.supportInfo?.website}
+            update={updateSupportInfoWebsite}
+            placeholder="Enter Website"
+          />
+          <PanelFormTextField
+            name="FAQ URL"
+            value={product.supportInfo?.faqUrl}
+            update={updateSupportInfoFaqUrl}
+            placeholder="Enter FAQ URL"
+          />
+          <PanelFormTextField
+            name="Support URL"
+            value={product.supportInfo?.supportUrl}
+            update={updateSupportInfoSupportUrl}
+            placeholder="Enter Support URL"
+          />
+          <ListEditor
+            title="Emails"
+            items={product.supportInfo?.emails}
+            keySelector={(email: Email) => email.address + email.title}
+            ItemComponent={SupportEmailComponent}
+            NewItemComponent={NewSupportEmailComponent}
+            handleRemoveItem={handleSupportInfoEmailRemove}
+            isReadOnly={isReadOnly}
+            emptyMessage="No emails specified"
+          />
+        </PanelFormSection>
+      </div>
+    );
+  },
+);
+
 export const DataProductEditor = observer(() => {
   const editorStore = useEditorStore();
   const dataProductEditorState =
@@ -907,12 +1157,32 @@ export const DataProductEditor = observer(() => {
   const product = dataProductEditorState.product;
   const accessPointStates = dataProductEditorState.accessPointGroupStates
     .map((e) => e.accessPointStates)
-    .flat();
+    .flat(); //KXT remove if don't use
   const isReadOnly = dataProductEditorState.isReadOnly;
-  const openNewModal = () => {
-    dataProductEditorState.setAccessPointGroupModal(true);
-  };
   const auth = useAuth();
+
+  const selectedTab = dataProductEditorState.selectedTab;
+  const changeTab =
+    (tab: DATA_PRODUCT_TAB): (() => void) =>
+    (): void =>
+      dataProductEditorState.setSelectedTab(tab);
+
+  const renderDataProductEditorTab = (): React.ReactNode => {
+    switch (selectedTab) {
+      case DATA_PRODUCT_TAB.GENERAL:
+        return <GeneralTab product={product} isReadOnly={isReadOnly} />;
+      case DATA_PRODUCT_TAB.ACCESS_POINT_GROUPS:
+        return (
+          <AccessPointGroupTab
+            dataProductEditorState={dataProductEditorState}
+            isReadOnly={isReadOnly}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   const deployDataProduct = (): void => {
     // Trigger OAuth flow if not authenticated
     if (!auth.isAuthenticated) {
@@ -937,42 +1207,6 @@ export const DataProductEditor = observer(() => {
     }
   };
 
-  const updateDataProductTitle = (val: string | undefined): void => {
-    dataProduct_setTitle(product, val ?? '');
-  };
-  const updateDataProductDescription: ChangeEventHandler<
-    HTMLTextAreaElement
-  > = (event) => {
-    dataProduct_setDescription(product, event.target.value);
-  };
-
-  const updateSupportInfoDocumentationUrl = (val: string | undefined): void => {
-    dataProduct_setSupportInfoIfAbsent(product);
-    if (product.supportInfo) {
-      supportInfo_setDocumentationUrl(product.supportInfo, val ?? '');
-    }
-  };
-
-  const updateSupportInfoWebsite = (val: string | undefined): void => {
-    dataProduct_setSupportInfoIfAbsent(product);
-    if (product.supportInfo) {
-      supportInfo_setWebsite(product.supportInfo, val ?? '');
-    }
-  };
-
-  const updateSupportInfoFaqUrl = (val: string | undefined): void => {
-    dataProduct_setSupportInfoIfAbsent(product);
-    if (product.supportInfo) {
-      supportInfo_setFaqUrl(product.supportInfo, val ?? '');
-    }
-  };
-
-  const updateSupportInfoSupportUrl = (val: string | undefined): void => {
-    dataProduct_setSupportInfoIfAbsent(product);
-    if (product.supportInfo) {
-      supportInfo_setSupportUrl(product.supportInfo, val ?? '');
-    }
-  };
   useApplicationNavigationContext(
     LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.DATA_PRODUCT_EDITOR,
   );
@@ -994,84 +1228,6 @@ export const DataProductEditor = observer(() => {
     editorStore.applicationStore.alertUnhandledError,
     dataProductEditorState,
   ]);
-
-  const handleSupportInfoEmailAdd = (address: string, title: string): void => {
-    dataProduct_setSupportInfoIfAbsent(product);
-    if (product.supportInfo) {
-      supportInfo_addEmail(product.supportInfo, new Email(address, title));
-    }
-  };
-
-  const handleSupportInfoEmailRemove = (email: Email): void => {
-    if (product.supportInfo) {
-      supportInfo_deleteEmail(product.supportInfo, email);
-    }
-  };
-
-  const SupportEmailComponent = observer(
-    (props: { item: Email }): React.ReactElement => {
-      const { item } = props;
-
-      return (
-        <div className="panel__content__form__section__list__item__rows">
-          <div className="row">
-            <label className="label">Address</label>
-            <div className="textbox">{item.address}</div>
-          </div>
-          <div className="row">
-            <label className="label">Title</label>
-            <div className="textbox">{item.title}</div>
-          </div>
-        </div>
-      );
-    },
-  );
-
-  const NewSupportEmailComponent = observer(
-    (props: { onFinishEditing: () => void }) => {
-      const { onFinishEditing } = props;
-      const [address, setAddress] = useState('');
-      const [title, setTitle] = useState('');
-
-      return (
-        <div className="data-product-editor__support-info__new-email">
-          <div className="panel__content__form__section__list__new-item__input">
-            <input
-              className="input input-group__input panel__content__form__section__input input--dark"
-              type="email"
-              placeholder="Enter email"
-              value={address}
-              onChange={(event) => {
-                setAddress(event.target.value);
-              }}
-            />
-          </div>
-          <div className="panel__content__form__section__list__new-item__input">
-            <input
-              className="input input-group__input panel__content__form__section__input input--dark"
-              type="title"
-              placeholder="Enter title"
-              value={title}
-              onChange={(event) => {
-                setTitle(event.target.value);
-              }}
-            />
-          </div>
-          <button
-            className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-            onClick={() => {
-              handleSupportInfoEmailAdd(address, title);
-              setAddress('');
-              setTitle('');
-              onFinishEditing();
-            }}
-          >
-            Save
-          </button>
-        </div>
-      );
-    },
-  );
 
   return (
     <div className="data-product-editor">
@@ -1100,127 +1256,24 @@ export const DataProductEditor = observer(() => {
             </div>
           </PanelHeaderActions>
         </div>
-        <div className="panel" style={{ padding: '1rem', flex: 0 }}>
-          <PanelFormTextField
-            name="Title"
-            value={product.title}
-            prompt="Provide a title for this Lakehouse Data Product."
-            update={updateDataProductTitle}
-            placeholder="Enter title"
-          />
-          <div style={{ margin: '1rem' }}>
-            <div className="panel__content__form__section__header__label">
-              Description
-            </div>
-            <div className="panel__content__form__section__header__prompt">
-              Provide a description for this Lakehouse Data Product.
-            </div>
-            <textarea
-              className="panel__content__form__section__textarea"
-              spellCheck={false}
-              disabled={isReadOnly}
-              value={product.description}
-              onChange={updateDataProductDescription}
-              style={{
-                padding: '0.5rem',
-                width: '45rem',
-                maxWidth: '45rem !important',
-              }}
-            />
-          </div>
-
-          <PanelFormSection>
-            <div className="panel__content__form__section__header__label">
-              Support Information
-            </div>
-            <div className="panel__content__form__section__header__prompt">
-              Configure support information for this Lakehouse Data Product.
-            </div>
-            <PanelFormTextField
-              name="Documentation URL"
-              value={product.supportInfo?.documentationUrl ?? ''}
-              update={updateSupportInfoDocumentationUrl}
-              placeholder="Enter Documentation URL"
-            />
-            <PanelFormTextField
-              name="Website"
-              value={product.supportInfo?.website}
-              update={updateSupportInfoWebsite}
-              placeholder="Enter Website"
-            />
-            <PanelFormTextField
-              name="FAQ URL"
-              value={product.supportInfo?.faqUrl}
-              update={updateSupportInfoFaqUrl}
-              placeholder="Enter FAQ URL"
-            />
-            <PanelFormTextField
-              name="Support URL"
-              value={product.supportInfo?.supportUrl}
-              update={updateSupportInfoSupportUrl}
-              placeholder="Enter Support URL"
-            />
-            <ListEditor
-              title="Emails"
-              items={product.supportInfo?.emails}
-              keySelector={(email: Email) => email.address + email.title}
-              ItemComponent={SupportEmailComponent}
-              NewItemComponent={NewSupportEmailComponent}
-              handleRemoveItem={handleSupportInfoEmailRemove}
-              isReadOnly={isReadOnly}
-              emptyMessage="No emails specified"
-            />
-          </PanelFormSection>
-        </div>
-        <div className="panel" style={{ overflow: 'auto' }}>
-          <PanelHeader>
-            <div className="panel__header__title">
-              <div className="panel__header__title__label">
-                access point groups
-              </div>
-            </div>
-            <PanelHeaderActions>
-              <PanelHeaderActionItem
-                className="panel__header__action"
-                onClick={openNewModal}
-                disabled={isReadOnly}
-                title="Create new access point group"
+        {/* KXT modeled after how service does tabs */}
+        <div className="panel__header service-editor__header--with-tabs">
+          <div className="uml-element-editor__tabs">
+            {Object.values(DATA_PRODUCT_TAB).map((tab) => (
+              <div
+                key={tab}
+                onClick={changeTab(tab)}
+                className={clsx('service-editor__tab', {
+                  'service-editor__tab--active': tab === selectedTab,
+                })}
               >
-                <PlusIcon />
-              </PanelHeaderActionItem>
-            </PanelHeaderActions>
-          </PanelHeader>
-          <PanelContent>
-            <div
-              style={{ overflow: 'auto', margin: '1rem', marginLeft: '1.5rem' }}
-            >
-              {dataProductEditorState.accessPointGroupStates.map(
-                (groupState) =>
-                  groupState.accessPointStates.length > 0 && (
-                    <AccessPointGroupSection
-                      key={groupState.uuid}
-                      groupState={groupState}
-                      isReadOnly={isReadOnly}
-                    />
-                  ),
-              )}
-            </div>
-            {!accessPointStates.length && (
-              <DataProductEditorSplashScreen
-                dataProductEditorState={dataProductEditorState}
-              />
-            )}
-          </PanelContent>
-          {dataProductEditorState.accessPointGroupModal && (
-            <NewAccessPointGroupModal
-              dataProductEditorState={dataProductEditorState}
-            />
-          )}
-          {dataProductEditorState.deployResponse && (
-            <DataProductDeploymentResponseModal
-              state={dataProductEditorState}
-            />
-          )}
+                {tab}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="panel__content service-editor__content">
+          {renderDataProductEditorTab()}
         </div>
       </div>
     </div>

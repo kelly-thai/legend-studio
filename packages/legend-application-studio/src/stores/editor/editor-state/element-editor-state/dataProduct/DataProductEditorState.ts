@@ -70,6 +70,11 @@ import type {
   LakehouseIngestionManager,
 } from '@finos/legend-server-lakehouse';
 
+export enum DATA_PRODUCT_TAB {
+  GENERAL = 'General',
+  ACCESS_POINT_GROUPS = 'Access Point Groups',
+}
+
 export class AccessPointState {
   readonly state: AccessPointGroupState;
   accessPoint: AccessPoint;
@@ -267,6 +272,7 @@ export class DataProductEditorState extends ElementEditorState {
   deployOnOpen = false;
   deployResponse: AdhocDataProductDeployResponse | undefined;
   editingGroupState: AccessPointGroupState | undefined;
+  selectedTab: DATA_PRODUCT_TAB;
 
   constructor(
     editorStore: EditorStore,
@@ -281,6 +287,8 @@ export class DataProductEditorState extends ElementEditorState {
       accessPointGroupModal: observable,
       accessPointGroupStates: observable,
       isConvertingTransformLambdaObjects: observable,
+      selectedTab: observable,
+      setSelectedTab: action,
       deploy: flow,
       deployOnOpen: observable,
       deployResponse: observable,
@@ -300,6 +308,7 @@ export class DataProductEditorState extends ElementEditorState {
     if (elementConfig instanceof DataProductElementEditorInitialConfiguration) {
       this.deployOnOpen = elementConfig.deployOnOpen ?? false;
     }
+    this.selectedTab = DATA_PRODUCT_TAB.GENERAL; //KXT TODO default tab to general?
   }
 
   setDeployOnOpen(value: boolean): void {
@@ -310,6 +319,10 @@ export class DataProductEditorState extends ElementEditorState {
     response: AdhocDataProductDeployResponse | undefined,
   ): void {
     this.deployResponse = response;
+  }
+
+  setSelectedTab(tab: DATA_PRODUCT_TAB): void {
+    this.selectedTab = tab;
   }
 
   *convertAccessPointsFuncObjects(): GeneratorFn<void> {
