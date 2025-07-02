@@ -53,6 +53,7 @@ import {
   CaretDownIcon,
   WarningIcon,
   PanelFormSection,
+  ContextMenu,
 } from '@finos/legend-art';
 import React, {
   useRef,
@@ -61,7 +62,10 @@ import React, {
   type ChangeEventHandler,
 } from 'react';
 import { filterByType } from '@finos/legend-shared';
-import { InlineLambdaEditor } from '@finos/legend-query-builder';
+import {
+  InlineLambdaEditor,
+  valueSpecReturnTDS,
+} from '@finos/legend-query-builder';
 import { action, flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
@@ -120,7 +124,7 @@ const NewAccessPointAccessPoint = observer(
     const handleSubmit = () => {
       if (id) {
         const accessPointGroup =
-          dataProductEditorState.editingGroupState ?? 'default';
+          dataProductEditorState.selectedGroupState ?? 'default'; //KXT how to handle this better?
         dataProductEditorState.addAccessPoint(
           id,
           description,
@@ -777,7 +781,7 @@ const AccessPointGroupCard = observer(
     };
 
     const openNewModal = () => {
-      productEditorState.setEditingGroupState(groupState);
+      productEditorState.setSelectedGroupState(groupState); //KXT TODO this shouldn't be needed anymore
       productEditorState.setAccessPointModal(true);
     };
     return (
@@ -908,20 +912,37 @@ const AccessPointGroupTab = observer(
     const { dataProductEditorState, isReadOnly } = props;
     const accessPointStates = dataProductEditorState.accessPointGroupStates
       .map((e) => e.accessPointStates)
-      .flat();
+      .flat(); //KXT TODO is this needed? track group states?
+    const groupStates = dataProductEditorState.accessPointGroupStates;
+    const selectedGroupState = dataProductEditorState.selectedGroupState;
     const openNewModal = () => {
       dataProductEditorState.setAccessPointGroupModal(true);
+    };
+    const changeGroup = (group: AccessPointGroupState): void => {
+      dataProductEditorState.setSelectedGroupState(group);
     };
 
     return (
       <div className="panel" style={{ overflow: 'auto' }}>
         <PanelHeader>
-          <div className="panel__header__title">
+          {/* <div className="panel__header__title">
             <div className="panel__header__title__label">
               access point groups
             </div>
-          </div>
-          <PanelHeaderActions>
+          </div> */}
+          <div className="uml-element-editor__tabs">
+            {groupStates.map((group) => (
+              <div
+                key={group.value.id}
+                onClick={(): void => changeGroup(group)}
+                className={clsx('service-test-suite-editor__tab', {
+                  'service-test-suite-editor__tab--active':
+                    group === selectedGroupState,
+                })}
+              >
+                {group.value.id}
+              </div>
+            ))}
             <PanelHeaderActionItem
               className="panel__header__action"
               onClick={openNewModal}
@@ -930,13 +951,24 @@ const AccessPointGroupTab = observer(
             >
               <PlusIcon />
             </PanelHeaderActionItem>
+          </div>
+
+          <PanelHeaderActions>
+            {/* <PanelHeaderActionItem
+              className="panel__header__action"
+              onClick={openNewModal}
+              disabled={isReadOnly}
+              title="Create new access point group"
+            >
+              <PlusIcon />
+            </PanelHeaderActionItem> */}
           </PanelHeaderActions>
         </PanelHeader>
         <PanelContent>
           <div
-            style={{ overflow: 'auto', margin: '1rem', marginLeft: '1.5rem' }}
+            style={{ overflow: 'auto', margin: '1rem', marginLeft: '1.5rem' }} //KXT move this to individual groups? make sure each group is scrollable
           >
-            {dataProductEditorState.accessPointGroupStates.map(
+            {/* {dataProductEditorState.accessPointGroupStates.map(
               (groupState) =>
                 groupState.accessPointStates.length > 0 && ( //KXT TODO allow empty groups
                   <AccessPointGroupCard
@@ -945,6 +977,13 @@ const AccessPointGroupTab = observer(
                     isReadOnly={isReadOnly}
                   />
                 ),
+            )} */}
+            {selectedGroupState && (
+              <AccessPointGroupCard
+                key={selectedGroupState.uuid}
+                groupState={selectedGroupState}
+                isReadOnly={isReadOnly}
+              />
             )}
           </div>
           {!accessPointStates.length && (
@@ -1093,7 +1132,7 @@ const GeneralTab = observer(
         <PanelFormTextField
           name="Title"
           value={product.title}
-          prompt="Provide a title for this Lakehouse Data Product."
+          prompt="Provide a descriptive name for the Data Product to appear in Marketplace."
           update={updateDataProductTitle}
           placeholder="Enter title"
         />
@@ -1102,7 +1141,8 @@ const GeneralTab = observer(
             Description
           </div>
           <div className="panel__content__form__section__header__prompt">
-            Provide a description for this Lakehouse Data Product.
+            Clearly describe the purpose, content, and intended use of the Data
+            Product. Markdown is supported.
           </div>
           <textarea
             className="panel__content__form__section__textarea"
