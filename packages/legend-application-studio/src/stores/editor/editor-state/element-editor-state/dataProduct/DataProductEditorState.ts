@@ -271,7 +271,7 @@ export class DataProductEditorState extends ElementEditorState {
   isConvertingTransformLambdaObjects = false;
   deployOnOpen = false;
   deployResponse: AdhocDataProductDeployResponse | undefined;
-  editingGroupState: AccessPointGroupState | undefined;
+  selectedGroupState: AccessPointGroupState | undefined; //KXT TODO set to default
   selectedTab: DATA_PRODUCT_TAB;
 
   constructor(
@@ -298,12 +298,21 @@ export class DataProductEditorState extends ElementEditorState {
       setAccessPointGroupModal: action,
       addAccessPoint: action,
       convertAccessPointsFuncObjects: flow,
-      editingGroupState: observable,
-      setEditingGroupState: action,
+      selectedGroupState: observable,
+      setSelectedGroupState: action,
     });
     this.accessPointGroupStates = this.product.accessPointGroups.map(
       (e) => new AccessPointGroupState(e, this),
     );
+    //KXT how to handle default?
+    const defaultGroup = new AccessPointGroup();
+    defaultGroup.id = 'default';
+    defaultGroup.description = 'The default access group'; //KXT this is init in engine call T->F?
+    const defaultIdx = this.accessPointGroupStates.push(
+      //KXT TODO add unique check here, possible 2 default groups (empty textmode, add AP, form mode)
+      new AccessPointGroupState(defaultGroup, this),
+    );
+    this.selectedGroupState = this.accessPointGroupStates[defaultIdx - 1];
     const elementConfig = config?.elementEditorConfiguration;
     if (elementConfig instanceof DataProductElementEditorInitialConfiguration) {
       this.deployOnOpen = elementConfig.deployOnOpen ?? false;
@@ -367,8 +376,8 @@ export class DataProductEditorState extends ElementEditorState {
     this.accessPointModal = val;
   }
 
-  setEditingGroupState(val: AccessPointGroupState | undefined): void {
-    this.editingGroupState = val;
+  setSelectedGroupState(val: AccessPointGroupState | undefined): void {
+    this.selectedGroupState = val;
   }
 
   setAccessPointGroupModal(val: boolean): void {
