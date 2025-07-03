@@ -18,6 +18,7 @@ import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type AccessPointGroupState,
+  AccessPointState,
   DATA_PRODUCT_TAB,
   DataProductEditorState,
   generateUrlToDeployOnOpen,
@@ -54,12 +55,18 @@ import {
   WarningIcon,
   PanelFormSection,
   ContextMenu,
+  VerticalDragHandleIcon,
+  useDragPreviewLayer,
+  DragPreviewLayer,
+  PanelDnDEntry,
+  PanelEntryDragHandle,
 } from '@finos/legend-art';
 import React, {
   useRef,
   useState,
   useEffect,
   type ChangeEventHandler,
+  useCallback,
 } from 'react';
 import { filterByType } from '@finos/legend-shared';
 import {
@@ -91,6 +98,7 @@ import {
   ActionAlertType,
   useApplicationNavigationContext,
 } from '@finos/legend-application';
+import { useDrag, useDrop } from 'react-dnd';
 
 export enum AP_GROUP_MODAL_ERRORS {
   GROUP_NAME_EMPTY = 'Group Name is empty',
@@ -103,6 +111,16 @@ export enum AP_GROUP_MODAL_ERRORS {
 
 export const AP_EMPTY_DESC_WARNING =
   'Describe the data this access point produces';
+
+//KXT TODO move this to where its used later
+const AccessPointDragPreviewLayer: React.FC = () => (
+  <DragPreviewLayer
+    labelGetter={(item: AccessPointDragSource): string => {
+      return item.accessPoint.accessPoint.id ?? 'oops'; //KXT TODO bug??? idk how to fix yet
+    }}
+    types={['ACCESS_POINT']} //KXT TODO hardcoded
+  />
+);
 
 const NewAccessPointAccessPoint = observer(
   (props: { dataProductEditorState: DataProductEditorState }) => {
@@ -461,6 +479,11 @@ const hoverIcon = () => {
   );
 };
 
+//kxt todo move this to the top if needed
+export type AccessPointDragSource = {
+  accessPoint: AccessPointState; //KXT state or ap?
+};
+
 export const LakehouseDataProductAcccessPointEditor = observer(
   (props: {
     accessPointState: LakehouseAccessPointState;
@@ -468,9 +491,9 @@ export const LakehouseDataProductAcccessPointEditor = observer(
   }) => {
     const { accessPointState } = props;
     const accessPoint = accessPointState.accessPoint;
-    const productEditorState = accessPointState.state;
+    const groupState = accessPointState.state;
     const lambdaEditorState = accessPointState.lambdaState;
-    const propertyHasParserError = productEditorState.accessPointStates
+    const propertyHasParserError = groupState.accessPointStates
       .filter(filterByType(LakehouseAccessPointState))
       .find((pm) => pm.lambdaState.parserError);
     const [editingDescription, setEditingDescription] = useState(false);
@@ -500,129 +523,222 @@ export const LakehouseDataProductAcccessPointEditor = observer(
       },
     );
 
+    //KXT TODO if don't use as drag previw put back in return statement
+    const TitleElement: React.FC = () => (
+      <div className={clsx('access-point-editor__name', {})}>
+        <div className="access-point-editor__name__label">{accessPoint.id}</div>
+      </div>
+    );
+
+    const ref = useRef<HTMLDivElement>(null);
+    const handleRef = useRef<HTMLDivElement>(null);
+
+    const handleHover = useCallback((item: AccessPointDragSource): void => {
+      //KXT TODO implement logic of dropping here??? this is for reordering
+      // const draggingAp = item.accessPoint;
+      // const hoveredAp = accessPoint;
+      // annotatedElement_swapStereotypes(
+      //   annotatedElement,
+      //   draggingProperty,
+      //   hoveredProperty,
+      // );
+    }, []);
+
+    const [{ isBeingDraggedAP }, dropConnector] = useDrop<
+      AccessPointDragSource,
+      void,
+      { isBeingDraggedAP: AccessPointState | undefined }
+    >(
+      () => ({
+        accept: ['ACCESS_POINT'], //KXT hardcoded
+        hover: (item) => handleHover(item),
+        collect: (monitor) => ({
+          isBeingDraggedAP: monitor.getItem<AccessPointDragSource | null>()
+            ?.accessPoint,
+        }),
+      }),
+      [handleHover],
+    );
+    dropConnector(ref);
+
+    const isBeingDragged = accessPoint === isBeingDraggedAP?.accessPoint;
+
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<AccessPointDragSource>(
+        () => ({
+          type: 'ACCESS_POINT',
+          item: () => ({
+            accessPoint: accessPointState,
+          }),
+          collect: (monitor) => ({
+            isDragging: monitor.isDragging(), // Track if this item is being dragged
+          }),
+        }),
+        [accessPointState],
+      );
+    dragConnector(handleRef);
+
+    useDragPreviewLayer(dragPreviewConnector);
+
     return (
       <div
         className={clsx('access-point-editor', {
           backdrop__element: propertyHasParserError,
         })}
       >
-        <div className="access-point-editor__metadata">
-          <div className={clsx('access-point-editor__name', {})}>
-            <div className="access-point-editor__name__label">
-              {accessPoint.id}
-            </div>
-          </div>
-          {editingDescription ? (
-            <textarea
-              className="panel__content__form__section__input"
-              spellCheck={false}
-              value={accessPoint.description ?? ''}
-              onChange={updateAccessPointDescription}
-              placeholder="Access Point description"
-              onBlur={handleBlur}
-              style={{
-                overflow: 'hidden',
-                resize: 'none',
-                padding: '0.25rem',
-              }}
-            />
-          ) : (
-            <div
-              onClick={handleEdit}
-              title="Click to edit access point description"
-              className="access-point-editor__description-container"
-            >
-              {accessPoint.description ? (
-                <HoverTextArea
-                  text={accessPoint.description}
-                  handleMouseOver={handleMouseOver}
-                  handleMouseOut={handleMouseOut}
+        {/* <div
+      className={clsx('access-point-editor', {
+        'access-point-editor--dragging': isDragging,
+      })}
+      ref={(node) => {
+        drag(node); // Apply the drag ref
+      }}
+    >
+      
+      <div className="access-point-editor__dnd-handle" title={'Drag this Access Point to another group'}>
+          <VerticalDragHandleIcon />
+          
+        </div>
+    </div> */}
+
+        <PanelDnDEntry
+          ref={ref}
+          className="stereotype-selector__container"
+          placeholder={<div className="dnd__placeholder--light"></div>}
+          showPlaceholder={isBeingDragged}
+        >
+          <PanelEntryDragHandle
+            dragSourceConnector={handleRef}
+            isDragging={isBeingDragged}
+          />
+
+          {/* KXT this div encompasses whole access point (what was there before) - TODO move to own class */}
+          <div style={{ flex: 1 }}>
+            <div className="access-point-editor__metadata">
+              <TitleElement />
+              {editingDescription ? (
+                <textarea
+                  className="panel__content__form__section__input"
+                  spellCheck={false}
+                  value={accessPoint.description ?? ''}
+                  onChange={updateAccessPointDescription}
+                  placeholder="Access Point description"
+                  onBlur={handleBlur}
+                  style={{
+                    overflow: 'hidden',
+                    resize: 'none',
+                    padding: '0.25rem',
+                  }}
                 />
               ) : (
                 <div
-                  className="access-point-editor__group-container__description--warning"
-                  onMouseOver={handleMouseOver}
-                  onMouseOut={handleMouseOut}
+                  onClick={handleEdit}
+                  title="Click to edit access point description"
+                  className="access-point-editor__description-container"
                 >
-                  <WarningIcon />
-                  {AP_EMPTY_DESC_WARNING}
+                  {accessPoint.description ? (
+                    <HoverTextArea
+                      text={accessPoint.description}
+                      handleMouseOver={handleMouseOver}
+                      handleMouseOut={handleMouseOut}
+                    />
+                  ) : (
+                    <div
+                      className="access-point-editor__group-container__description--warning"
+                      onMouseOver={handleMouseOver}
+                      onMouseOut={handleMouseOut}
+                    >
+                      <WarningIcon />
+                      {AP_EMPTY_DESC_WARNING}
+                    </div>
+                  )}
+
+                  {isHovering && hoverIcon()}
                 </div>
               )}
-
-              {isHovering && hoverIcon()}
-            </div>
-          )}
-          <div className="access-point-editor__info">
-            <div
-              className={clsx('access-point-editor__type')}
-              title={'Change target environment'}
-            >
-              <div className="access-point-editor__type__label">
-                {accessPoint.targetEnvironment}
-              </div>
-              <div
-                style={{
-                  background: 'transparent',
-                  height: '100%',
-                  alignItems: 'center',
-                  display: 'flex',
-                }}
-              >
-                <ControlledDropdownMenu
-                  className="access-point-editor__dropdown"
-                  content={
-                    <MenuContent>
-                      {Object.values(LakehouseTargetEnv).map((environment) => (
-                        <MenuContentItem
-                          key={environment}
-                          className="btn__dropdown-combo__option"
-                          onClick={() =>
-                            updateAccessPointTargetEnvironment(environment)
-                          }
-                        >
-                          {environment}
-                        </MenuContentItem>
-                      ))}
-                    </MenuContent>
-                  }
-                  menuProps={{
-                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                    transformOrigin: { vertical: 'top', horizontal: 'right' },
-                  }}
+              <div className="access-point-editor__info">
+                <div
+                  className={clsx('access-point-editor__type')}
+                  title={'Change target environment'}
                 >
-                  <CaretDownIcon />
-                </ControlledDropdownMenu>
+                  <div className="access-point-editor__type__label">
+                    {accessPoint.targetEnvironment}
+                  </div>
+                  <div
+                    style={{
+                      background: 'transparent',
+                      height: '100%',
+                      alignItems: 'center',
+                      display: 'flex',
+                    }}
+                  >
+                    <ControlledDropdownMenu
+                      className="access-point-editor__dropdown"
+                      content={
+                        <MenuContent>
+                          {Object.values(LakehouseTargetEnv).map(
+                            (environment) => (
+                              <MenuContentItem
+                                key={environment}
+                                className="btn__dropdown-combo__option"
+                                onClick={() =>
+                                  updateAccessPointTargetEnvironment(
+                                    environment,
+                                  )
+                                }
+                              >
+                                {environment}
+                              </MenuContentItem>
+                            ),
+                          )}
+                        </MenuContent>
+                      }
+                      menuProps={{
+                        anchorOrigin: {
+                          vertical: 'bottom',
+                          horizontal: 'right',
+                        },
+                        transformOrigin: {
+                          vertical: 'top',
+                          horizontal: 'right',
+                        },
+                      }}
+                    >
+                      <CaretDownIcon />
+                    </ControlledDropdownMenu>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="access-point-editor__content">
+              <div className="access-point-editor__generic-entry">
+                <div className="access-point-editor__entry__container">
+                  <div className="access-point-editor__entry">
+                    <InlineLambdaEditor
+                      className={'access-point-editor__lambda-editor'}
+                      disabled={
+                        lambdaEditorState.val.state.state
+                          .isConvertingTransformLambdaObjects
+                      }
+                      lambdaEditorState={lambdaEditorState}
+                      forceBackdrop={Boolean(lambdaEditorState.parserError)}
+                    />
+                  </div>
+                </div>
+                <button
+                  className="access-point-editor__generic-entry__remove-btn"
+                  onClick={() => {
+                    groupState.deleteAccessPoint(accessPointState);
+                  }}
+                  tabIndex={-1}
+                  title="Remove"
+                >
+                  <TimesIcon />
+                </button>
               </div>
             </div>
           </div>
-        </div>
-        <div className="access-point-editor__content">
-          <div className="access-point-editor__generic-entry">
-            <div className="access-point-editor__entry__container">
-              <div className="access-point-editor__entry">
-                <InlineLambdaEditor
-                  className={'access-point-editor__lambda-editor'}
-                  disabled={
-                    lambdaEditorState.val.state.state
-                      .isConvertingTransformLambdaObjects
-                  }
-                  lambdaEditorState={lambdaEditorState}
-                  forceBackdrop={Boolean(lambdaEditorState.parserError)}
-                />
-              </div>
-            </div>
-            <button
-              className="access-point-editor__generic-entry__remove-btn"
-              onClick={() => {
-                productEditorState.deleteAccessPoint(accessPointState);
-              }}
-              tabIndex={-1}
-              title="Remove"
-            >
-              <TimesIcon />
-            </button>
-          </div>
-        </div>
+        </PanelDnDEntry>
       </div>
     );
   },
@@ -924,25 +1040,55 @@ const AccessPointGroupTab = observer(
 
     return (
       <div className="panel" style={{ overflow: 'auto' }}>
+        <AccessPointDragPreviewLayer />
         <PanelHeader>
           {/* <div className="panel__header__title">
             <div className="panel__header__title__label">
               access point groups
             </div>
           </div> */}
+
+          {/* <div
+            ref={stereotypeRef}
+            className={clsx('panel__content__lists', {
+              'panel__content__lists--dnd-over':
+                isStereotypeDragOver && !isReadOnly,
+            })}
+          > */}
+
           <div className="uml-element-editor__tabs">
-            {groupStates.map((group) => (
-              <div
-                key={group.value.id}
-                onClick={(): void => changeGroup(group)}
-                className={clsx('service-test-suite-editor__tab', {
-                  'service-test-suite-editor__tab--active':
-                    group === selectedGroupState,
-                })}
-              >
-                {group.value.id}
-              </div>
-            ))}
+            {groupStates.map((group) => {
+              const [{ isOver }, drop] = useDrop(() => ({
+                accept: 'ACCESS_POINT', // Accept draggable items of type 'ACCESS_POINT'
+                drop: (item: AccessPointDragSource) => {
+                  // Handle the drop event
+                  console.log(
+                    `Dropped access point ${item.accessPoint.accessPoint.id} into group ${group.value.id}`,
+                  );
+                  // Call a function to move the access point to this group
+                  // moveAccessPointToGroup(item.accessPointId, item.sourceGroupId, group.value.id);
+                },
+                collect: (monitor) => ({
+                  isOver: monitor.isOver(), // Track if an item is being dragged over this tab
+                }),
+              }));
+
+              return (
+                <div
+                  ref={(node) => {
+                    drop(node); // Apply the drop ref
+                  }}
+                  key={group.value.id}
+                  onClick={(): void => changeGroup(group)}
+                  className={clsx('service-test-suite-editor__tab', {
+                    'service-test-suite-editor__tab--active':
+                      group === selectedGroupState,
+                  })}
+                >
+                  {group.value.id}
+                </div>
+              );
+            })}
             <PanelHeaderActionItem
               className="panel__header__action"
               onClick={openNewModal}
