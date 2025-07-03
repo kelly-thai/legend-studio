@@ -312,7 +312,7 @@ export class DataProductEditorState extends ElementEditorState {
       //KXT TODO add unique check here, possible 2 default groups (empty textmode, add AP, form mode)
       new AccessPointGroupState(defaultGroup, this),
     );
-    this.selectedGroupState = this.accessPointGroupStates[defaultIdx - 1];
+    this.selectedGroupState = this.accessPointGroupStates[defaultIdx - 1]; //KXT set default only if empty?
     const elementConfig = config?.elementEditorConfiguration;
     if (elementConfig instanceof DataProductElementEditorInitialConfiguration) {
       this.deployOnOpen = elementConfig.deployOnOpen ?? false;
