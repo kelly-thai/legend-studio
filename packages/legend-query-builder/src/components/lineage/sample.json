@@ -1,0 +1,1123 @@
+{
+  "_type": "simple",
+  "classLineage": {
+    "edges": [
+      {
+        "source": "datamarts::hcm::domain::person::Tenure",
+        "target": "Lambda",
+        "type": "Registered"
+      },
+      {
+        "source": "pack_datamarts::hcm::domain::person",
+        "target": "datamarts::hcm::domain::person::Tenure",
+        "type": "Registered"
+      },
+      {
+        "source": "datamarts::hcm::domain::person::CoveredDetails",
+        "target": "Lambda",
+        "type": "Registered"
+      },
+      {
+        "source": "pack_datamarts::hcm::domain::person",
+        "target": "datamarts::hcm::domain::person::CoveredDetails",
+        "type": "Registered"
+      },
+      {
+        "source": "datamarts::hcm::domain::person::GSContactDetails",
+        "target": "Lambda",
+        "type": "Registered"
+      },
+      {
+        "source": "pack_datamarts::hcm::domain::person",
+        "target": "datamarts::hcm::domain::person::GSContactDetails",
+        "type": "Registered"
+      },
+      {
+        "source": "datamarts::hcm::domain::person::JobDetails",
+        "target": "Lambda",
+        "type": "Registered"
+      },
+      {
+        "source": "pack_datamarts::hcm::domain::person",
+        "target": "datamarts::hcm::domain::person::JobDetails",
+        "type": "Registered"
+      },
+      {
+        "source": "datamarts::hcm::domain::person::ReferenceJobCode",
+        "target": "Lambda",
+        "type": "Registered"
+      },
+      {
+        "source": "pack_datamarts::hcm::domain::person",
+        "target": "datamarts::hcm::domain::person::ReferenceJobCode",
+        "type": "Registered"
+      },
+      {
+        "source": "datamarts::hcm::domain::person::RetirementEligibility",
+        "target": "Lambda",
+        "type": "Registered"
+      },
+      {
+        "source": "pack_datamarts::hcm::domain::person",
+        "target": "datamarts::hcm::domain::person::RetirementEligibility",
+        "type": "Registered"
+      },
+      {
+        "source": "meta::pure::tds::TDSRow",
+        "target": "Lambda",
+        "type": "Registered"
+      },
+      {
+        "source": "pack_meta::pure::tds",
+        "target": "meta::pure::tds::TDSRow",
+        "type": "Registered"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "Lambda",
+        "text": "",
+        "type": "LambdaFunction"
+      },
+      {
+        "id": "datamarts::hcm::domain::person::Tenure",
+        "text": "Tenure",
+        "type": "Class"
+      },
+      {
+        "id": "datamarts::hcm::domain::person::CoveredDetails",
+        "text": "CoveredDetails",
+        "type": "Class"
+      },
+      {
+        "id": "datamarts::hcm::domain::person::GSContactDetails",
+        "text": "GSContactDetails",
+        "type": "Class"
+      },
+      {
+        "id": "datamarts::hcm::domain::person::JobDetails",
+        "text": "JobDetails",
+        "type": "Class"
+      },
+      {
+        "id": "datamarts::hcm::domain::person::ReferenceJobCode",
+        "text": "ReferenceJobCode",
+        "type": "Class"
+      },
+      {
+        "id": "datamarts::hcm::domain::person::RetirementEligibility",
+        "text": "RetirementEligibility",
+        "type": "Class"
+      },
+      {
+        "id": "meta::pure::tds::TDSRow",
+        "text": "TDSRow",
+        "type": "Class"
+      },
+      {
+        "id": "pack_datamarts::hcm::domain::person",
+        "text": "person",
+        "type": "Package"
+      },
+      {
+        "id": "pack_meta::pure::tds",
+        "text": "tds",
+        "type": "Package"
+      }
+    ]
+  },
+  "databaseLineage": {
+    "edges": [
+      {
+        "source": "tb_PeopleDataStoreTenurePEOPLE_DATALAKETENURE",
+        "target": "Lambda",
+        "type": "DataSet"
+      },
+      {
+        "source": "db_PeopleDataStoreTenure",
+        "target": "tb_PeopleDataStoreTenurePEOPLE_DATALAKETENURE",
+        "type": "DataSet"
+      },
+      {
+        "source": "tb_PeopleDataStoreTenurePEOPLE_DATALAKETENURE_COVERED_CODE",
+        "target": "Lambda",
+        "type": "DataSet"
+      },
+      {
+        "source": "db_PeopleDataStoreTenure",
+        "target": "tb_PeopleDataStoreTenurePEOPLE_DATALAKETENURE_COVERED_CODE",
+        "type": "DataSet"
+      },
+      {
+        "source": "tb_PeopleDataStoreTenurePEOPLE_DATALAKETENURE_GS_CONTACT",
+        "target": "Lambda",
+        "type": "DataSet"
+      },
+      {
+        "source": "db_PeopleDataStoreTenure",
+        "target": "tb_PeopleDataStoreTenurePEOPLE_DATALAKETENURE_GS_CONTACT",
+        "type": "DataSet"
+      },
+      {
+        "source": "tb_PeopleDataStoreTenurePEOPLE_DATALAKETENURE_JOB_DETAILS",
+        "target": "Lambda",
+        "type": "DataSet"
+      },
+      {
+        "source": "db_PeopleDataStoreTenure",
+        "target": "tb_PeopleDataStoreTenurePEOPLE_DATALAKETENURE_JOB_DETAILS",
+        "type": "DataSet"
+      },
+      {
+        "source": "tb_ReferenceStorePEOPLE_DATALAKEREF_JOBCODE",
+        "target": "Lambda",
+        "type": "DataSet"
+      },
+      {
+        "source": "db_ReferenceStore",
+        "target": "tb_ReferenceStorePEOPLE_DATALAKEREF_JOBCODE",
+        "type": "DataSet"
+      },
+      {
+        "source": "tb_PeopleDataStoreTenurePEOPLE_DATALAKETENURE_RETIREMENT_ELIGIBILITY",
+        "target": "Lambda",
+        "type": "DataSet"
+      },
+      {
+        "source": "db_PeopleDataStoreTenure",
+        "target": "tb_PeopleDataStoreTenurePEOPLE_DATALAKETENURE_RETIREMENT_ELIGIBILITY",
+        "type": "DataSet"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "Lambda",
+        "text": "",
+        "type": "LambdaFunction"
+      },
+      {
+        "id": "tb_PeopleDataStoreTenurePEOPLE_DATALAKETENURE",
+        "text": "TENURE",
+        "type": "Table"
+      },
+      {
+        "id": "tb_PeopleDataStoreTenurePEOPLE_DATALAKETENURE_COVERED_CODE",
+        "text": "TENURE_COVERED_CODE",
+        "type": "Table"
+      },
+      {
+        "id": "tb_PeopleDataStoreTenurePEOPLE_DATALAKETENURE_GS_CONTACT",
+        "text": "TENURE_GS_CONTACT",
+        "type": "Table"
+      },
+      {
+        "id": "tb_PeopleDataStoreTenurePEOPLE_DATALAKETENURE_JOB_DETAILS",
+        "text": "TENURE_JOB_DETAILS",
+        "type": "Table"
+      },
+      {
+        "id": "tb_ReferenceStorePEOPLE_DATALAKEREF_JOBCODE",
+        "text": "REF_JOBCODE",
+        "type": "Table"
+      },
+      {
+        "id": "tb_PeopleDataStoreTenurePEOPLE_DATALAKETENURE_RETIREMENT_ELIGIBILITY",
+        "text": "TENURE_RETIREMENT_ELIGIBILITY",
+        "type": "Table"
+      },
+      {
+        "id": "db_PeopleDataStoreTenure",
+        "text": "PeopleDataStoreTenure",
+        "type": "Database"
+      },
+      {
+        "id": "db_ReferenceStore",
+        "text": "ReferenceStore",
+        "type": "Database"
+      }
+    ]
+  },
+  "functionTree": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "display": "codeStaffFlag",
+                  "type": "String"
+                },
+                {
+                  "display": "fromZ",
+                  "type": "DateTime"
+                },
+                {
+                  "display": "processingDate",
+                  "type": "Date"
+                },
+                {
+                  "display": "thruZ",
+                  "type": "DateTime"
+                }
+              ],
+              "display": "coveredDetailsAllVersions",
+              "type": "datamarts::hcm::domain::person::CoveredDetails"
+            },
+            {
+              "display": "fromZ",
+              "type": "DateTime"
+            },
+            {
+              "children": [
+                {
+                  "display": "kerberos",
+                  "type": "String"
+                },
+                {
+                  "display": "processingDate",
+                  "type": "Date"
+                }
+              ],
+              "display": "gsContactAllVersions",
+              "type": "datamarts::hcm::domain::person::GSContactDetails"
+            },
+            {
+              "children": [
+                {
+                  "display": "fromZ",
+                  "type": "DateTime"
+                },
+                {
+                  "children": [
+                    {
+                      "display": "corporateDirectoryStatusTitle",
+                      "type": "String"
+                    },
+                    {
+                      "display": "fromZ",
+                      "type": "DateTime"
+                    },
+                    {
+                      "display": "partnerFlag",
+                      "type": "String"
+                    },
+                    {
+                      "display": "processingDate",
+                      "type": "Date"
+                    },
+                    {
+                      "display": "thruZ",
+                      "type": "DateTime"
+                    }
+                  ],
+                  "display": "jobCodeAllVersions",
+                  "type": "datamarts::hcm::domain::person::ReferenceJobCode"
+                },
+                {
+                  "display": "processingDate",
+                  "type": "Date"
+                },
+                {
+                  "display": "thruZ",
+                  "type": "DateTime"
+                }
+              ],
+              "display": "jobDetailsAllVersions",
+              "type": "datamarts::hcm::domain::person::JobDetails"
+            },
+            {
+              "display": "latestTenureFlag",
+              "type": "String"
+            },
+            {
+              "display": "personNumber",
+              "type": "String"
+            },
+            {
+              "children": [
+                {
+                  "display": "processingDate",
+                  "type": "Date"
+                },
+                {
+                  "display": "retirementEligibilityDate",
+                  "type": "String"
+                }
+              ],
+              "display": "retirementEligibilityAllVersions",
+              "type": "datamarts::hcm::domain::person::RetirementEligibility"
+            },
+            {
+              "display": "thruZ",
+              "type": "DateTime"
+            }
+          ],
+          "display": "Tenure",
+          "type": "datamarts::hcm::domain::person::Tenure"
+        },
+        {
+          "children": [
+            {
+              "display": "(Q)getDateTime",
+              "type": "DateTime"
+            },
+            {
+              "display": "(Q)isNull",
+              "type": "Boolean"
+            }
+          ],
+          "display": "TDSRow",
+          "type": "meta::pure::tds::TDSRow"
+        }
+      ],
+      "display": "root",
+      "type": "root"
+    }
+  ],
+  "relationTree": {
+    "display": "",
+    "isView": false
+  },
+  "reportLineage": [
+    {
+      "columns": [
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_JOB_DETAILS"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "JOB_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_JOB_DETAILS"
+        },
+        {
+          "database": "ReferenceStore",
+          "name": "JOB_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "REF_JOBCODE"
+        },
+        {
+          "database": "ReferenceStore",
+          "name": "LAKE_THRU",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "REF_JOBCODE"
+        }
+      ],
+      "name": "Job Details/Job Code/Thru Z",
+      "propertyTree": {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "display": "processingDate",
+                        "type": "Date"
+                      },
+                      {
+                        "display": "thruZ",
+                        "type": "DateTime"
+                      }
+                    ],
+                    "display": "jobCodeAllVersions",
+                    "type": "datamarts::hcm::domain::person::ReferenceJobCode"
+                  },
+                  {
+                    "display": "processingDate",
+                    "type": "Date"
+                  }
+                ],
+                "display": "jobDetailsAllVersions",
+                "type": "datamarts::hcm::domain::person::JobDetails"
+              }
+            ],
+            "display": "Tenure",
+            "type": "datamarts::hcm::domain::person::Tenure"
+          }
+        ],
+        "display": "root",
+        "type": "root"
+      }
+    },
+    {
+      "columns": [
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_COVERED_CODE"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "CODESTAFF_FLAG",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_COVERED_CODE"
+        }
+      ],
+      "name": "Covered Details/Code Staff Flag",
+      "propertyTree": {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "display": "codeStaffFlag",
+                    "type": "String"
+                  },
+                  {
+                    "display": "processingDate",
+                    "type": "Date"
+                  }
+                ],
+                "display": "coveredDetailsAllVersions",
+                "type": "datamarts::hcm::domain::person::CoveredDetails"
+              }
+            ],
+            "display": "Tenure",
+            "type": "datamarts::hcm::domain::person::Tenure"
+          }
+        ],
+        "display": "root",
+        "type": "root"
+      }
+    },
+    {
+      "columns": [
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "LATEST_TENURE_FLAG",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE"
+        }
+      ],
+      "name": "Latest Tenure Flag",
+      "propertyTree": {
+        "children": [
+          {
+            "children": [
+              {
+                "display": "latestTenureFlag",
+                "type": "String"
+              }
+            ],
+            "display": "Tenure",
+            "type": "datamarts::hcm::domain::person::Tenure"
+          }
+        ],
+        "display": "root",
+        "type": "root"
+      }
+    },
+    {
+      "columns": [
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_JOB_DETAILS"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "JOB_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_JOB_DETAILS"
+        },
+        {
+          "database": "ReferenceStore",
+          "name": "JOB_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "REF_JOBCODE"
+        },
+        {
+          "database": "ReferenceStore",
+          "name": "LAKE_FROM",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "REF_JOBCODE"
+        }
+      ],
+      "name": "Job Details/Job Code/From Z",
+      "propertyTree": {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "display": "fromZ",
+                        "type": "DateTime"
+                      },
+                      {
+                        "display": "processingDate",
+                        "type": "Date"
+                      }
+                    ],
+                    "display": "jobCodeAllVersions",
+                    "type": "datamarts::hcm::domain::person::ReferenceJobCode"
+                  },
+                  {
+                    "display": "processingDate",
+                    "type": "Date"
+                  }
+                ],
+                "display": "jobDetailsAllVersions",
+                "type": "datamarts::hcm::domain::person::JobDetails"
+              }
+            ],
+            "display": "Tenure",
+            "type": "datamarts::hcm::domain::person::Tenure"
+          }
+        ],
+        "display": "root",
+        "type": "root"
+      }
+    },
+    {
+      "columns": [
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_COVERED_CODE"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "LAKE_THRU",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_COVERED_CODE"
+        }
+      ],
+      "name": "Covered Details/Thru Z",
+      "propertyTree": {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "display": "processingDate",
+                    "type": "Date"
+                  },
+                  {
+                    "display": "thruZ",
+                    "type": "DateTime"
+                  }
+                ],
+                "display": "coveredDetailsAllVersions",
+                "type": "datamarts::hcm::domain::person::CoveredDetails"
+              }
+            ],
+            "display": "Tenure",
+            "type": "datamarts::hcm::domain::person::Tenure"
+          }
+        ],
+        "display": "root",
+        "type": "root"
+      }
+    },
+    {
+      "columns": [
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_JOB_DETAILS"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "JOB_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_JOB_DETAILS"
+        },
+        {
+          "database": "ReferenceStore",
+          "name": "JOB_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "REF_JOBCODE"
+        },
+        {
+          "database": "ReferenceStore",
+          "name": "CORPORATE_STATUS_TITLE",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "REF_JOBCODE"
+        }
+      ],
+      "name": "Job Details/Job Code/Corporate Directory Status Title",
+      "propertyTree": {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "display": "corporateDirectoryStatusTitle",
+                        "type": "String"
+                      },
+                      {
+                        "display": "processingDate",
+                        "type": "Date"
+                      }
+                    ],
+                    "display": "jobCodeAllVersions",
+                    "type": "datamarts::hcm::domain::person::ReferenceJobCode"
+                  },
+                  {
+                    "display": "processingDate",
+                    "type": "Date"
+                  }
+                ],
+                "display": "jobDetailsAllVersions",
+                "type": "datamarts::hcm::domain::person::JobDetails"
+              }
+            ],
+            "display": "Tenure",
+            "type": "datamarts::hcm::domain::person::Tenure"
+          }
+        ],
+        "display": "root",
+        "type": "root"
+      }
+    },
+    {
+      "columns": [
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "PERSON_NUMBER",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE"
+        }
+      ],
+      "name": "Person Number",
+      "propertyTree": {
+        "children": [
+          {
+            "children": [
+              {
+                "display": "personNumber",
+                "type": "String"
+              }
+            ],
+            "display": "Tenure",
+            "type": "datamarts::hcm::domain::person::Tenure"
+          }
+        ],
+        "display": "root",
+        "type": "root"
+      }
+    },
+    {
+      "columns": [
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_JOB_DETAILS"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "LAKE_FROM",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_JOB_DETAILS"
+        }
+      ],
+      "name": "Job Details/From Z",
+      "propertyTree": {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "display": "fromZ",
+                    "type": "DateTime"
+                  },
+                  {
+                    "display": "processingDate",
+                    "type": "Date"
+                  }
+                ],
+                "display": "jobDetailsAllVersions",
+                "type": "datamarts::hcm::domain::person::JobDetails"
+              }
+            ],
+            "display": "Tenure",
+            "type": "datamarts::hcm::domain::person::Tenure"
+          }
+        ],
+        "display": "root",
+        "type": "root"
+      }
+    },
+    {
+      "columns": [
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "LAKE_FROM",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE"
+        }
+      ],
+      "name": "From Z",
+      "propertyTree": {
+        "children": [
+          {
+            "children": [
+              {
+                "display": "fromZ",
+                "type": "DateTime"
+              }
+            ],
+            "display": "Tenure",
+            "type": "datamarts::hcm::domain::person::Tenure"
+          }
+        ],
+        "display": "root",
+        "type": "root"
+      }
+    },
+    {
+      "columns": [
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "LAKE_THRU",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE"
+        }
+      ],
+      "name": "Thru Z",
+      "propertyTree": {
+        "children": [
+          {
+            "children": [
+              {
+                "display": "thruZ",
+                "type": "DateTime"
+              }
+            ],
+            "display": "Tenure",
+            "type": "datamarts::hcm::domain::person::Tenure"
+          }
+        ],
+        "display": "root",
+        "type": "root"
+      }
+    },
+    {
+      "columns": [
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_JOB_DETAILS"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "LAKE_THRU",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_JOB_DETAILS"
+        }
+      ],
+      "name": "Job Details/Thru Z",
+      "propertyTree": {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "display": "processingDate",
+                    "type": "Date"
+                  },
+                  {
+                    "display": "thruZ",
+                    "type": "DateTime"
+                  }
+                ],
+                "display": "jobDetailsAllVersions",
+                "type": "datamarts::hcm::domain::person::JobDetails"
+              }
+            ],
+            "display": "Tenure",
+            "type": "datamarts::hcm::domain::person::Tenure"
+          }
+        ],
+        "display": "root",
+        "type": "root"
+      }
+    },
+    {
+      "columns": [
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_COVERED_CODE"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "LAKE_FROM",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_COVERED_CODE"
+        }
+      ],
+      "name": "Covered Details/From Z",
+      "propertyTree": {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "display": "fromZ",
+                    "type": "DateTime"
+                  },
+                  {
+                    "display": "processingDate",
+                    "type": "Date"
+                  }
+                ],
+                "display": "coveredDetailsAllVersions",
+                "type": "datamarts::hcm::domain::person::CoveredDetails"
+              }
+            ],
+            "display": "Tenure",
+            "type": "datamarts::hcm::domain::person::Tenure"
+          }
+        ],
+        "display": "root",
+        "type": "root"
+      }
+    },
+    {
+      "columns": [
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_RETIREMENT_ELIGIBILITY"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "RETIREMENT_ELIGIBILITY_DATE",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_RETIREMENT_ELIGIBILITY"
+        }
+      ],
+      "name": "Retirement Eligibility/Retirement Eligibility Date",
+      "propertyTree": {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "display": "processingDate",
+                    "type": "Date"
+                  },
+                  {
+                    "display": "retirementEligibilityDate",
+                    "type": "String"
+                  }
+                ],
+                "display": "retirementEligibilityAllVersions",
+                "type": "datamarts::hcm::domain::person::RetirementEligibility"
+              }
+            ],
+            "display": "Tenure",
+            "type": "datamarts::hcm::domain::person::Tenure"
+          }
+        ],
+        "display": "root",
+        "type": "root"
+      }
+    },
+    {
+      "columns": [
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_JOB_DETAILS"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "JOB_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_JOB_DETAILS"
+        },
+        {
+          "database": "ReferenceStore",
+          "name": "JOB_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "REF_JOBCODE"
+        },
+        {
+          "database": "ReferenceStore",
+          "name": "PARTNER_FLAG",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "REF_JOBCODE"
+        }
+      ],
+      "name": "Job Details/Job Code/Partner Flag",
+      "propertyTree": {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "display": "partnerFlag",
+                        "type": "String"
+                      },
+                      {
+                        "display": "processingDate",
+                        "type": "Date"
+                      }
+                    ],
+                    "display": "jobCodeAllVersions",
+                    "type": "datamarts::hcm::domain::person::ReferenceJobCode"
+                  },
+                  {
+                    "display": "processingDate",
+                    "type": "Date"
+                  }
+                ],
+                "display": "jobDetailsAllVersions",
+                "type": "datamarts::hcm::domain::person::JobDetails"
+              }
+            ],
+            "display": "Tenure",
+            "type": "datamarts::hcm::domain::person::Tenure"
+          }
+        ],
+        "display": "root",
+        "type": "root"
+      }
+    },
+    {
+      "columns": [
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "TENURE_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_GS_CONTACT"
+        },
+        {
+          "database": "PeopleDataStoreTenure",
+          "name": "KERBEROS_ID",
+          "schema": "PEOPLE_DATALAKE",
+          "table": "TENURE_GS_CONTACT"
+        }
+      ],
+      "name": "GS Contact/Kerberos",
+      "propertyTree": {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "display": "kerberos",
+                    "type": "String"
+                  },
+                  {
+                    "display": "processingDate",
+                    "type": "Date"
+                  }
+                ],
+                "display": "gsContactAllVersions",
+                "type": "datamarts::hcm::domain::person::GSContactDetails"
+              }
+            ],
+            "display": "Tenure",
+            "type": "datamarts::hcm::domain::person::Tenure"
+          }
+        ],
+        "display": "root",
+        "type": "root"
+      }
+    }
+  ],
+  "serializer": {
+    "name": "lineage",
+    "version": "v1_2_0"
+  }
+}

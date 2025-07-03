@@ -60,6 +60,7 @@ import {
 } from '@finos/legend-graph';
 import {
   ExecutionPlanState,
+  LineageState,
   LambdaEditorState,
   LambdaParameterState,
   LambdaParametersState,
@@ -304,9 +305,11 @@ export class FunctionEditorState extends ElementEditorState {
 
   isRunningFunc = false;
   isGeneratingPlan = false;
+  isGeneratingLineage = false;
   executionResult?: ExecutionResult | undefined; // NOTE: stored as lossless JSON string
   executionPlanState: ExecutionPlanState;
   parametersState: FunctionParametersState;
+  lineageState: LineageState;
   funcRunPromise: Promise<ExecutionResultWithMetadata> | undefined = undefined;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
@@ -316,6 +319,7 @@ export class FunctionEditorState extends ElementEditorState {
       selectedTab: observable,
       isRunningFunc: observable,
       isGeneratingPlan: observable,
+      isGeneratingLineage: observable,
       executionResult: observable,
       executionPlanState: observable,
       label: override,
@@ -329,6 +333,7 @@ export class FunctionEditorState extends ElementEditorState {
       handleRunFunc: flow,
       cancelFuncRun: flow,
       updateFunctionWithQuery: flow,
+      generateLineage: flow,
     });
 
     assertType(
@@ -348,6 +353,7 @@ export class FunctionEditorState extends ElementEditorState {
     );
     this.parametersState = new FunctionParametersState(this);
     this.functionTestableEditorState = new FunctionTestableState(this);
+    this.lineageState = new LineageState(this.editorStore.applicationStore);
   }
 
   override get label(): string {
@@ -685,6 +691,37 @@ export class FunctionEditorState extends ElementEditorState {
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
+    }
+  }
+
+  *generateLineage(): GeneratorFn<void> {
+    if (this.isGeneratingLineage) {
+      return;
+    }
+    try {
+      this.isGeneratingLineage = true;
+      const report = reportGraphAnalytics(
+        this.editorStore.graphManagerState.graph,
+      );
+      const expressionSequence = this.bodyExpressionSequence;
+      const lineageData =
+        (yield this.editorStore.graphManagerState.graphManager.generateLineage(
+          expressionSequence,
+          undefined,
+          undefined,
+          this.editorStore.graphManagerState.graph,
+          report,
+        )) as object;
+      this.lineageState.setLineageData(lineageData);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.LINEAGE_GENERATION_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.isGeneratingLineage = false;
     }
   }
 }

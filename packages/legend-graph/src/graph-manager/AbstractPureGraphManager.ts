@@ -576,6 +576,14 @@ export abstract class AbstractPureGraphManager {
     report?: GraphManagerOperationReport,
   ): Promise<RawExecutionPlan>;
 
+  abstract generateLineage(
+    lambda: RawLambda,
+    mapping: Mapping | undefined,
+    runtime: Runtime | undefined,
+    graph: PureModel,
+    report?: GraphManagerOperationReport,
+  ): Promise<Object>;
+
   abstract debugExecutionPlanGeneration(
     lambda: RawLambda,
     mapping: Mapping | undefined,

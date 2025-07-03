@@ -109,7 +109,7 @@ enum CORE_ENGINE_ACTIVITY_TRACE {
 
   EXECUTE = 'execute',
   GENERATE_EXECUTION_PLAN = 'generate execution plan',
-
+  GENERATE_LINEAGE = 'generate lineage',
   GENERATE_ARTIFACTS = 'generate artifacts',
 
   REGISTER_SERVICE = 'register service',
@@ -808,6 +808,17 @@ export class V1_EngineServerClient extends AbstractServerClient {
       ),
       {},
       { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
+      undefined,
+      { enableCompression: true },
+    );
+
+  generateLineage = (input: PlainObject<V1_ExecuteInput>): Promise<Object> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_LINEAGE),
+      `${this._execution()}/generateLineage`,
+      this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.GENERATE_LINEAGE),
+      {},
+      undefined,
       undefined,
       { enableCompression: true },
     );
