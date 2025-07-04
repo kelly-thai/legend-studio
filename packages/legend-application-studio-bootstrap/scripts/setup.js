@@ -42,19 +42,19 @@ export const setup = (outputDir) => {
         appName: 'studio',
         env: 'local',
         sdlc: {
-          url: 'http://localhost:6100/api',
+          url: 'https://aws-gl.dev.sdlc.alloy.site.gs.com/api',
         },
         engine: {
-          url: 'http://localhost:6300/api',
+          url: 'https://int.exec.alloy.site.gs.com/api',
         },
         depot: {
-          url: 'http://localhost:6200/depot/api',
+          url: 'https://metadata.alloy.site.gs.com/api',
         },
         query: {
-          url: 'http://localhost:9001/query',
+          url: 'https://int.alloy.site.gs.com/query-server/api',
         },
         showcase: {
-          url: 'http://localhost:9003/api',
+          url: 'https://int.alloy.site.gs.com/showcase-server/api',
         },
         documentation: {
           url: 'https://legend.finos.org',

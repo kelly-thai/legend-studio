@@ -168,6 +168,7 @@ import {
 } from '../../../../action/query/PersistentDataCube.js';
 import { V1_getGenericTypeFullPath } from '../helpers/V1_DomainHelper.js';
 import { V1_relationTypeModelSchema } from '../transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.js';
+import type { LineageModel } from '../../../../../graph/metamodel/pure/lineage/LineageModel.js';
 
 class V1_RemoteEngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_RemoteEngine;
@@ -906,6 +907,12 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     input: V1_ExecuteInput,
   ): Promise<PlainObject<V1_ExecutionPlan>> {
     return this.engineServerClient.generatePlan(
+      V1_ExecuteInput.serialization.toJson(input),
+    );
+  }
+
+  generateLineage(input: V1_ExecuteInput): Promise<PlainObject<LineageModel>> {
+    return this.engineServerClient.generateLineage(
       V1_ExecuteInput.serialization.toJson(input),
     );
   }

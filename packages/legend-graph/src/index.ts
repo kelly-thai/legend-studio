@@ -349,7 +349,7 @@ export {
   PersistentDataCube,
   LightPersistentDataCube,
 } from './graph-manager/action/query/PersistentDataCube.js';
-
+export * from './graph/metamodel/pure/lineage/LineageModel.js';
 export * from './graph/metamodel/pure/executionPlan/ExecutionPlan.js';
 export { ExecutionNode } from './graph/metamodel/pure/executionPlan/nodes/ExecutionNode.js';
 export { FunctionParametersValidationNode } from './graph/metamodel/pure/executionPlan/nodes/FunctionParametersValidationNode.js';

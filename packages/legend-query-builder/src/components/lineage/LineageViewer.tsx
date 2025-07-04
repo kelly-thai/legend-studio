@@ -14,59 +14,95 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import {
   ResizablePanelGroup,
   ResizablePanel,
   PanelHeader,
   PanelContent,
   clsx,
+  Dialog,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import ReactFlow, { Background, Controls, MiniMap } from 'reactflow';
+// Fix ReactFlow import by importing the default export correctly
+import ReactFlow, {
+  Background,
+  Controls,
+  MiniMap,
+  ReactFlowProvider,
+  type Node,
+  type Edge,
+} from 'reactflow';
 import 'reactflow/dist/style.css';
 import { isNonNullable } from '@finos/legend-shared';
-
+import {
+  type LineageState,
+  LINEAGE_VIEW_MODE,
+} from '../../stores/lineage/LineageState.js';
 // Helper function to convert lineage data to React Flow nodes and edges
 const convertLineageToFlow = (lineage: any) => {
+  if (!lineage || !lineage.nodes) {
+    return { nodes: [], edges: [] };
+  }
+
   const nodes = lineage.nodes.map((node: any) => ({
     id: node.id,
     data: { label: node.text || node.id },
-    position: { x: Math.random() * 500, y: Math.random() * 500 }, // Random positions for simplicity
+    position: { x: Math.random() * 500, y: Math.random() * 500 },
     type: 'default',
   }));
 
-  const edges = lineage.edges.map((edge: any) => ({
-    id: `${edge.source}-${edge.target}`,
-    source: edge.source,
-    target: edge.target,
-    label: edge.type,
-    type: 'default',
-  }));
+  const edges =
+    lineage.edges?.map((edge: any) => ({
+      id: `${edge.source}-${edge.target}`,
+      source: edge.source,
+      target: edge.target,
+      label: edge.type,
+      type: 'default',
+    })) || [];
 
   return { nodes, edges };
 };
 
 // Graph Viewer Component
-const LineageGraphViewer = observer((props: { nodes: any[]; edges: any[] }) => {
-  const { nodes, edges } = props;
+const LineageGraphViewer = observer(
+  (props: { nodes: Node[]; edges: Edge[] }) => {
+    const { nodes, edges } = props;
 
-  return (
-    <ReactFlow nodes={nodes} edges={edges} fitView style={{ height: '100%' }}>
-      <Background />
-      <MiniMap />
-      <Controls />
-    </ReactFlow>
-  );
-});
+    return (
+      <div style={{ height: '100%', width: '100%' }}>
+        <ReactFlowProvider>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            fitView
+            defaultEdgeOptions={{ type: 'default' }}
+          >
+            <Background />
+            <MiniMap />
+            <Controls />
+          </ReactFlow>
+        </ReactFlowProvider>
+      </div>
+    );
+  },
+);
 
 // Main Viewer Content
 const LineageViewerContent = observer((props: { lineageState: any }) => {
   const { lineageState } = props;
   const selectedTab = lineageState.selectedTab;
-  const lineageData = lineageState.lineageData;
+  const lineageData = lineageState.lineageData || {
+    classLineage: {},
+    databaseLineage: {},
+    reportLineage: {},
+  };
 
-  // Convert lineage data to React Flow format
+  // Convert lineage data to React Flow format with safety checks
   const classLineageFlow = convertLineageToFlow(lineageData.classLineage);
   const databaseLineageFlow = convertLineageToFlow(lineageData.databaseLineage);
   const reportLineageFlow = convertLineageToFlow(lineageData.reportLineage);
@@ -98,7 +134,6 @@ const LineageViewerContent = observer((props: { lineageState: any }) => {
         return null;
     }
   };
-
   return (
     <div className="lineage-viewer__content">
       <ResizablePanelGroup orientation="vertical">
@@ -114,18 +149,90 @@ const LineageViewerContent = observer((props: { lineageState: any }) => {
 });
 
 // Main Lineage Viewer
-export const LineageViewer = observer((props: { lineageState: any }) => {
-  const { lineageState } = props;
+export const LineageViewer = observer(
+  (props: { lineageState: LineageState }) => {
+    const { lineageState } = props;
 
-  useEffect(() => {
-    if (!lineageState.selectedTab) {
-      lineageState.setSelectedTab('CLASS_LINEAGE');
+    const closePlanViewer = (): void => {
+      lineageState.setLineageData(undefined);
+      lineageState.setSelectedTab(LINEAGE_VIEW_MODE.CLASS_LINEAGE);
+    };
+    const lineage = lineageState.lineageData;
+    if (!lineageState) {
+      return null;
     }
-  }, [lineageState]);
+    //const isDarkMode = !executionPlanState.applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
 
-  return (
-    <div className="lineage-viewer">
-      <LineageViewerContent lineageState={lineageState} />
-    </div>
-  );
-});
+    // useEffect(() => {
+    //   if (!lineageState.selectedTab) {
+    //     lineageState.setSelectedTab(LINEAGE_VIEW_MODE.CLASS_LINEAGE);
+    //   }
+    // }, [lineageState]);
+
+    return (
+      <Dialog
+        open={Boolean(lineageState.lineageData)}
+        onClose={closePlanViewer}
+        // ...existing code...
+      >
+        <Modal className="editor-modal">
+          <ModalHeader title="Lineage" />
+          <ModalBody>
+            <div className="lineage-viewer" style={{ height: 800 }}>
+              <LineageViewerContent lineageState={lineageState} />
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              onClick={closePlanViewer}
+              text="Close"
+              type="secondary"
+            />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
+// export const ExecutionPlanViewer = observer(
+//   (props: { executionPlanState: ExecutionPlanState }) => {
+//     const { executionPlanState } = props;
+
+//     const rawPlan = executionPlanState.rawPlan;
+//     const isDarkMode =
+//       !executionPlanState.applicationStore.layoutService
+//         .TEMPORARY__isLightColorThemeEnabled;
+
+//     return (
+//       <Dialog
+//         open={Boolean(executionPlanState.rawPlan)}
+//         onClose={closePlanViewer}
+//         classes={{
+//           root: 'editor-modal__root-container',
+//           container: 'editor-modal__container',
+//           paper: 'editor-modal__content',
+//         }}
+//       >
+//         <Modal className="editor-modal" darkMode={isDarkMode}>
+//           <ModalHeader title="Execution Plan" />
+//           <ModalBody>
+
+//               <ExecutionPlanViewerContent
+//                 executionPlanState={executionPlanState}
+//                 rawPlan={rawPlan}
+//               />
+//             }
+//           </ModalBody>
+//           <ModalFooter>
+//             <ModalFooterButton
+//               onClick={closePlanViewer}
+//               text="Close"
+//               type="secondary"
+//             />
+//           </ModalFooter>
+//         </Modal>
+//       </Dialog>
+//     );
+//   },
+// );

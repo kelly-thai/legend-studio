@@ -16,6 +16,7 @@
 
 import { observable, action, makeObservable } from 'mobx';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
+import type { LineageModel } from '@finos/legend-graph';
 
 export enum LINEAGE_VIEW_MODE {
   CLASS_LINEAGE = 'CLASS_LINEAGE',
@@ -26,14 +27,17 @@ export enum LINEAGE_VIEW_MODE {
 export class LineageState {
   applicationStore: GenericLegendApplicationStore;
   selectedTab: LINEAGE_VIEW_MODE = LINEAGE_VIEW_MODE.CLASS_LINEAGE;
-  lineageData: object = {};
+  lineageData: LineageModel | undefined = undefined;
+  isLineageViewerOpen: boolean = false;
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     makeObservable(this, {
       selectedTab: observable,
       lineageData: observable,
+      isLineageViewerOpen: observable,
       setSelectedTab: action,
       setLineageData: action,
+      setIsLineageViewerOpen: action,
     });
     this.applicationStore = applicationStore;
   }
@@ -42,7 +46,11 @@ export class LineageState {
     this.selectedTab = tab;
   }
 
-  setLineageData(data: object): void {
+  setLineageData(data: LineageModel | undefined): void {
     this.lineageData = data;
+  }
+
+  setIsLineageViewerOpen(isOpen: boolean): void {
+    this.isLineageViewerOpen = isOpen;
   }
 }

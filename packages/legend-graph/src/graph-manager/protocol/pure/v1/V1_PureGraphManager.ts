@@ -364,6 +364,7 @@ import {
 } from './helpers/V1_DomainHelper.js';
 import { V1_DataProduct } from './model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_MemSQLFunction } from './model/packageableElements/function/V1_MemSQLFunction.js';
+import type { LineageModel } from '../../../../graph/metamodel/pure/lineage/LineageModel.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -4604,4 +4605,35 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     return graphData;
   };
+
+  async generateLineage(
+    lambda: RawLambda,
+    mapping: Mapping | undefined,
+    runtime: Runtime | undefined,
+    graph: PureModel,
+    _report?: GraphManagerOperationReport,
+  ): Promise<LineageModel> {
+    const report = _report ?? createGraphManagerOperationReport();
+    const stopWatch = new StopWatch();
+
+    const input = this.createExecutionInput(
+      graph,
+      mapping,
+      lambda,
+      runtime,
+      V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+    );
+    stopWatch.record(GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_INPUT__SUCCESS);
+    const result = await this.engine.generateLineage(input);
+    stopWatch.record(
+      GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_SERVER_CALL__SUCCESS,
+    );
+
+    report.timings = {
+      ...Object.fromEntries(stopWatch.records),
+      total: stopWatch.elapsed,
+    };
+
+    return result;
+  }
 }
