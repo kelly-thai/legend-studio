@@ -95,7 +95,10 @@ import type {
   LightPersistentDataCube,
   PersistentDataCube,
 } from '../../../../action/query/PersistentDataCube.js';
-import type { LineageModel } from '../../../../../graph/metamodel/pure/lineage/LineageModel.js';
+import type {
+  V1_LineageInput,
+  V1_LineageModel,
+} from '../model/lineage/V1_Lineage.js';
 
 export interface V1_GraphManagerEngine {
   config: TEMPORARY__AbstractEngineConfig;
@@ -239,8 +242,8 @@ export interface V1_GraphManagerEngine {
   ) => Promise<PlainObject<V1_ExecutionPlan>>;
 
   generateLineage: (
-    input: V1_ExecuteInput,
-  ) => Promise<PlainObject<LineageModel>>;
+    input: V1_LineageInput,
+  ) => Promise<PlainObject<V1_LineageModel>>;
 
   debugExecutionPlanGeneration: (
     input: V1_ExecuteInput,

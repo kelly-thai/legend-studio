@@ -119,7 +119,10 @@ import type {
   LightPersistentDataCube,
   PersistentDataCube,
 } from './action/query/PersistentDataCube.js';
-import type { LineageModel } from '../graph/metamodel/pure/lineage/LineageModel.js';
+import type {
+  LineageModel,
+  RawLineageModel,
+} from '../graph/metamodel/pure/lineage/LineageModel.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -583,7 +586,7 @@ export abstract class AbstractPureGraphManager {
     runtime: Runtime | undefined,
     graph: PureModel,
     report?: GraphManagerOperationReport,
-  ): Promise<LineageModel>;
+  ): Promise<RawLineageModel>;
 
   abstract debugExecutionPlanGeneration(
     lambda: RawLambda,
@@ -629,6 +632,11 @@ export abstract class AbstractPureGraphManager {
   abstract serializeExecutionPlan(
     executionPlan: ExecutionPlan,
   ): RawExecutionPlan;
+
+  abstract buildLineage(
+    executionPlanJson: RawLineageModel,
+    graph: PureModel,
+  ): LineageModel;
 
   abstract serializeExecutionNode(executionNode: ExecutionNode): object;
 

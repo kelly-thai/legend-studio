@@ -28,7 +28,7 @@ export class LineageState {
   applicationStore: GenericLegendApplicationStore;
   selectedTab: LINEAGE_VIEW_MODE = LINEAGE_VIEW_MODE.CLASS_LINEAGE;
   lineageData: LineageModel | undefined = undefined;
-  isLineageViewerOpen: boolean = false;
+  isLineageViewerOpen = false;
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     makeObservable(this, {

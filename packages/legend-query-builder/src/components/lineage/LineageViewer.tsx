@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, type JSX } from 'react';
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -26,10 +26,11 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  ModalFooterButton,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-// Fix ReactFlow import by importing the default export correctly
-import ReactFlow, {
+import {
+  ReactFlow,
   Background,
   Controls,
   MiniMap,
@@ -43,110 +44,145 @@ import {
   type LineageState,
   LINEAGE_VIEW_MODE,
 } from '../../stores/lineage/LineageState.js';
-// Helper function to convert lineage data to React Flow nodes and edges
-const convertLineageToFlow = (lineage: any) => {
-  if (!lineage || !lineage.nodes) {
+// Import the new LineageModel types
+import {
+  type LineageGraph,
+  type LineageNode,
+  type LineageEdge,
+  type ReportLineage,
+  type ReportLineageColumn,
+  type LineageModel,
+} from '@finos/legend-graph';
+
+// Helper function to convert LineageGraph to React Flow nodes and edges
+const convertLineageGraphToFlow = (graph?: LineageGraph) => {
+  if (!graph?.nodes) {
     return { nodes: [], edges: [] };
   }
-
-  const nodes = lineage.nodes.map((node: any) => ({
+  const nodes = graph.nodes.map((node: LineageNode) => ({
     id: node.id,
     data: { label: node.text || node.id },
     position: { x: Math.random() * 500, y: Math.random() * 500 },
-    type: 'default',
+    type: 'default' as const,
   }));
-
   const edges =
-    lineage.edges?.map((edge: any) => ({
+    graph.edges.map((edge: LineageEdge) => ({
       id: `${edge.source}-${edge.target}`,
       source: edge.source,
       target: edge.target,
       label: edge.type,
-      type: 'default',
+      type: 'default' as const,
     })) || [];
-
   return { nodes, edges };
 };
+
+// Helper function to convert ReportLineage[] to React Flow nodes and edges
+const convertReportLineageToFlow = (reportLineages?: ReportLineage[]) => {
+  if (!reportLineages || !Array.isArray(reportLineages)) {
+    return { nodes: [], edges: [] };
+  }
+  const nodes = reportLineages.flatMap((report: ReportLineage) =>
+    report.columns.map((col: ReportLineageColumn) => ({
+      id: `${report.name}-${col.name}`,
+      data: { label: `${report.name}.${col.name}` },
+      position: { x: Math.random() * 500, y: Math.random() * 500 },
+      type: 'default' as const,
+    })),
+  );
+  const edges: [] = [];
+  return { nodes, edges };
+};
+
+// Helper to render ReactFlow as a JSX.Element
+function renderReactFlow(nodes: Node[], edges: Edge[]): JSX.Element {
+  return (
+    <ReactFlowProvider>
+      <div style={{ height: 800 }}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          defaultEdgeOptions={{ type: 'default' }}
+        >
+          <Background />
+          <MiniMap />
+          <Controls />
+        </ReactFlow>
+      </div>
+    </ReactFlowProvider>
+  );
+}
 
 // Graph Viewer Component
 const LineageGraphViewer = observer(
   (props: { nodes: Node[]; edges: Edge[] }) => {
     const { nodes, edges } = props;
-
     return (
       <div style={{ height: '100%', width: '100%' }}>
-        <ReactFlowProvider>
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            fitView
-            defaultEdgeOptions={{ type: 'default' }}
-          >
-            <Background />
-            <MiniMap />
-            <Controls />
-          </ReactFlow>
-        </ReactFlowProvider>
+        {renderReactFlow(nodes, edges)}
       </div>
     );
   },
 );
 
 // Main Viewer Content
-const LineageViewerContent = observer((props: { lineageState: any }) => {
-  const { lineageState } = props;
-  const selectedTab = lineageState.selectedTab;
-  const lineageData = lineageState.lineageData || {
-    classLineage: {},
-    databaseLineage: {},
-    reportLineage: {},
-  };
+const LineageViewerContent = observer(
+  (props: { lineageState: LineageState }) => {
+    const { lineageState } = props;
+    const selectedTab = lineageState.selectedTab;
+    const lineageData = lineageState.lineageData;
 
-  // Convert lineage data to React Flow format with safety checks
-  const classLineageFlow = convertLineageToFlow(lineageData.classLineage);
-  const databaseLineageFlow = convertLineageToFlow(lineageData.databaseLineage);
-  const reportLineageFlow = convertLineageToFlow(lineageData.reportLineage);
+    // Convert lineage data to React Flow format with safety checks
+    const classLineageFlow = convertLineageGraphToFlow(
+      lineageData?.classLineage,
+    );
+    const databaseLineageFlow = convertLineageGraphToFlow(
+      lineageData?.databaseLineage,
+    );
+    const reportLineageFlow = convertReportLineageToFlow(
+      lineageData?.reportLineage,
+    );
 
-  const renderGraph = () => {
-    switch (selectedTab) {
-      case 'CLASS_LINEAGE':
-        return (
-          <LineageGraphViewer
-            nodes={classLineageFlow.nodes}
-            edges={classLineageFlow.edges}
-          />
-        );
-      case 'DATABASE_LINEAGE':
-        return (
-          <LineageGraphViewer
-            nodes={databaseLineageFlow.nodes}
-            edges={databaseLineageFlow.edges}
-          />
-        );
-      case 'REPORT_LINEAGE':
-        return (
-          <LineageGraphViewer
-            nodes={reportLineageFlow.nodes}
-            edges={reportLineageFlow.edges}
-          />
-        );
-      default:
-        return null;
-    }
-  };
-  return (
-    <div className="lineage-viewer__content">
-      <ResizablePanelGroup orientation="vertical">
-        <ResizablePanel>
-          <div className="panel lineage-viewer__graph">
-            <PanelHeader title="Lineage Graph" />
-            <PanelContent>{renderGraph()}</PanelContent>
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    </div>
-  );
-});
+    const renderGraph = () => {
+      switch (selectedTab) {
+        case 'CLASS_LINEAGE':
+          return (
+            <LineageGraphViewer
+              nodes={classLineageFlow.nodes}
+              edges={classLineageFlow.edges}
+            />
+          );
+        case 'DATABASE_LINEAGE':
+          return (
+            <LineageGraphViewer
+              nodes={databaseLineageFlow.nodes}
+              edges={databaseLineageFlow.edges}
+            />
+          );
+        case 'REPORT_LINEAGE':
+          return (
+            <LineageGraphViewer
+              nodes={reportLineageFlow.nodes}
+              edges={reportLineageFlow.edges}
+            />
+          );
+        default:
+          return null;
+      }
+    };
+    return (
+      <div className="lineage-viewer__content">
+        <ResizablePanelGroup orientation="vertical">
+          <ResizablePanel>
+            <div className="panel lineage-viewer__graph">
+              <PanelHeader title="Lineage Graph" />
+              <PanelContent>{renderGraph()}</PanelContent>
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
+    );
+  },
+);
 
 // Main Lineage Viewer
 export const LineageViewer = observer(
@@ -157,7 +193,6 @@ export const LineageViewer = observer(
       lineageState.setLineageData(undefined);
       lineageState.setSelectedTab(LINEAGE_VIEW_MODE.CLASS_LINEAGE);
     };
-    const lineage = lineageState.lineageData;
     if (!lineageState) {
       return null;
     }
@@ -183,11 +218,11 @@ export const LineageViewer = observer(
             </div>
           </ModalBody>
           <ModalFooter>
-            <ModalFooterButton
+            {/* <ModalFooterButton
               onClick={closePlanViewer}
               text="Close"
               type="secondary"
-            />
+            /> */}
           </ModalFooter>
         </Modal>
       </Dialog>

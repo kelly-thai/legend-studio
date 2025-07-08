@@ -364,7 +364,11 @@ import {
 } from './helpers/V1_DomainHelper.js';
 import { V1_DataProduct } from './model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_MemSQLFunction } from './model/packageableElements/function/V1_MemSQLFunction.js';
-import type { LineageModel } from '../../../../graph/metamodel/pure/lineage/LineageModel.js';
+import { LineageModel } from '../../../../graph/metamodel/pure/lineage/LineageModel.js';
+import {
+  V1_LineageInput,
+  type V1_LineageModel,
+} from './model/lineage/V1_Lineage.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -2703,6 +2707,32 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       parameterValues,
     );
 
+  public createLineageInput = (
+    graph: PureModel,
+    mapping: Mapping | undefined,
+    lambda: RawLambda,
+    runtime: Runtime | undefined,
+    clientVersion: string | undefined,
+    parameterValues?: ParameterValue[],
+  ): V1_LineageInput => {
+    const executionInput = this.createExecutionInput(
+      graph,
+      mapping,
+      lambda,
+      runtime,
+      clientVersion,
+      parameterValues,
+    );
+
+    const lineageInput = new V1_LineageInput();
+    lineageInput.clientVersion = executionInput.clientVersion;
+    lineageInput.function = executionInput.function;
+    lineageInput.mapping = executionInput.mapping;
+    lineageInput.model = executionInput.model;
+    lineageInput.runtime = executionInput.runtime;
+    return lineageInput;
+  };
+
   private createExecutionInputWithPureModelContext = (
     data: V1_PureModelContext,
     mapping: Mapping | undefined,
@@ -3164,6 +3194,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         this.logService,
       ).build(),
     );
+  }
+
+  buildLineage(
+    lineageJSON: PlainObject<V1_LineageModel>,
+    graph: PureModel,
+  ): LineageModel {
+    return deserialize(LineageModel, lineageJSON);
   }
 
   serializeExecutionPlan(
@@ -4616,7 +4653,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const report = _report ?? createGraphManagerOperationReport();
     const stopWatch = new StopWatch();
 
-    const input = this.createExecutionInput(
+    const input = this.createLineageInput(
       graph,
       mapping,
       lambda,

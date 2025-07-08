@@ -134,9 +134,9 @@ export class SerializerInfo {
     this.version = version;
   }
 }
+export type RawLineageModel = object;
 
 export class LineageModel {
-  _type: string;
   classLineage?: LineageGraph | undefined;
   databaseLineage?: LineageGraph | undefined;
   functionTree?: FunctionTreeNode[] | undefined;
@@ -144,14 +144,12 @@ export class LineageModel {
   reportLineage?: ReportLineage[] | undefined;
 
   constructor(
-    _type: string = '',
     classLineage?: LineageGraph,
     databaseLineage?: LineageGraph,
     functionTree?: FunctionTreeNode[],
     relationTree?: RelationTree,
     reportLineage?: ReportLineage[],
   ) {
-    this._type = _type;
     this.classLineage = classLineage;
     this.databaseLineage = databaseLineage;
     this.functionTree = functionTree;

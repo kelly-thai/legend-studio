@@ -339,6 +339,7 @@ export {
   V1_DataSubscriptionResponseModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_SubscriptionSerializationHelper.js';
 export { V1_deserializeIngestEnvironment } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_IngestSerializationHelper.js';
+export * from './graph-manager/protocol/pure/v1/model/lineage/V1_Lineage.js';
 
 // --------------------------------------------- EXECUTION PLAN --------------------------------------------------
 

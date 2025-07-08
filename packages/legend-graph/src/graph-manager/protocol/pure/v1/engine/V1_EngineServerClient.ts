@@ -90,7 +90,7 @@ import type { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js
 import type { DeploymentResult } from '../../../../action/DeploymentResult.js';
 import type { PersistentDataCube } from '../../../../action/query/PersistentDataCube.js';
 import { type V1_LambdaTdsToRelationInput } from './pureProtocol/V1_LambdaTdsToRelationInput.js';
-import type { LineageModel } from '../../../../../graph/metamodel/pure/lineage/LineageModel.js';
+import type { V1_LineageModel } from '../model/lineage/V1_Lineage.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -745,6 +745,19 @@ export class V1_EngineServerClient extends AbstractServerClient {
       { skipProcessing: Boolean(options?.returnAsResponse) },
     );
 
+  generateLineage = (
+    input: PlainObject<V1_ExecuteInput>,
+  ): Promise<PlainObject<V1_LineageModel>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_LINEAGE),
+      `${this.baseUrl}/lineage/v1/function/fullAnalytics`,
+      this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.GENERATE_LINEAGE),
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
+    );
+
   generatePlan = (
     input: PlainObject<V1_ExecuteInput>,
   ): Promise<PlainObject<V1_ExecutionPlan>> =>
@@ -809,19 +822,6 @@ export class V1_EngineServerClient extends AbstractServerClient {
       ),
       {},
       { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
-      undefined,
-      { enableCompression: true },
-    );
-
-  generateLineage = (
-    input: PlainObject<V1_ExecuteInput>,
-  ): Promise<LineageModel> =>
-    this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_LINEAGE),
-      `${this._execution()}/lineage/v1/function/fullAnalytics`,
-      this.debugPayload(input, CORE_ENGINE_ACTIVITY_TRACE.GENERATE_LINEAGE),
-      {},
-      undefined,
       undefined,
       { enableCompression: true },
     );
