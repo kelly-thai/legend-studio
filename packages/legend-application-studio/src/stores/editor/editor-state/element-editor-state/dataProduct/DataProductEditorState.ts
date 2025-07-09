@@ -70,18 +70,30 @@ import type {
   LakehouseIngestionManager,
 } from '@finos/legend-server-lakehouse';
 
-export enum DATA_PRODUCT_TAB {
-  GENERAL = 'General',
-  ACCESS_POINT_GROUPS = 'Access Point Groups',
+// export enum DATA_PRODUCT_TAB {
+//   GENERAL = 'General',
+//   ACCESS_POINT_GROUPS = 'Access Point Groups',
+// }
+
+export enum DATA_PRODUCT_ACTIVITY {
+  HOME = 'Home',
+  SUPPORT = 'Support',
+  APG = 'APG',
 }
 
 export class AccessPointState {
   readonly state: AccessPointGroupState;
+  readonly uuid = uuid();
   accessPoint: AccessPoint;
 
   constructor(val: AccessPoint, editorState: AccessPointGroupState) {
     this.accessPoint = val;
     this.state = editorState;
+
+    // makeObservable(this, {
+    //   accessPoint: observable,
+    // });
+    // observe_AccessPoint(this.accessPoint);
   }
 }
 
@@ -272,7 +284,7 @@ export class DataProductEditorState extends ElementEditorState {
   deployOnOpen = false;
   deployResponse: AdhocDataProductDeployResponse | undefined;
   selectedGroupState: AccessPointGroupState | undefined; //KXT TODO set to default
-  selectedTab: DATA_PRODUCT_TAB;
+  selectedActivity: DATA_PRODUCT_ACTIVITY;
 
   constructor(
     editorStore: EditorStore,
@@ -287,8 +299,10 @@ export class DataProductEditorState extends ElementEditorState {
       accessPointGroupModal: observable,
       accessPointGroupStates: observable,
       isConvertingTransformLambdaObjects: observable,
-      selectedTab: observable,
-      setSelectedTab: action,
+      selectedActivity: observable,
+      setSelectedActivity: action,
+      addGroupState: action,
+      deleteGroupState: action,
       deploy: flow,
       deployOnOpen: observable,
       deployResponse: observable,
@@ -301,23 +315,28 @@ export class DataProductEditorState extends ElementEditorState {
       selectedGroupState: observable,
       setSelectedGroupState: action,
     });
-    this.accessPointGroupStates = this.product.accessPointGroups.map(
-      (e) => new AccessPointGroupState(e, this),
-    );
-    //KXT how to handle default?
+
+    //KXT how to handle default? KXT TODO clean up
     const defaultGroup = new AccessPointGroup();
     defaultGroup.id = 'default';
     defaultGroup.description = 'The default access group'; //KXT this is init in engine call T->F?
-    const defaultIdx = this.accessPointGroupStates.push(
-      //KXT TODO add unique check here, possible 2 default groups (empty textmode, add AP, form mode)
-      new AccessPointGroupState(defaultGroup, this),
+    // const defaultIdx = this.accessPointGroupStates.push(
+    //   //KXT TODO add unique check here, possible 2 default groups (empty textmode, add AP, form mode)
+    //   new AccessPointGroupState(defaultGroup, this),
+    // );
+    dataProduct_addAccessPointGroup(this.product, defaultGroup);
+
+    this.accessPointGroupStates = this.product.accessPointGroups.map(
+      (e) => new AccessPointGroupState(e, this),
     );
-    this.selectedGroupState = this.accessPointGroupStates[defaultIdx - 1]; //KXT set default only if empty?
+
+    this.selectedGroupState = this.accessPointGroupStates[0]; //KXT
+
     const elementConfig = config?.elementEditorConfiguration;
     if (elementConfig instanceof DataProductElementEditorInitialConfiguration) {
       this.deployOnOpen = elementConfig.deployOnOpen ?? false;
     }
-    this.selectedTab = DATA_PRODUCT_TAB.GENERAL; //KXT TODO default tab to general?
+    this.selectedActivity = DATA_PRODUCT_ACTIVITY.HOME;
   }
 
   setDeployOnOpen(value: boolean): void {
@@ -330,8 +349,20 @@ export class DataProductEditorState extends ElementEditorState {
     this.deployResponse = response;
   }
 
-  setSelectedTab(tab: DATA_PRODUCT_TAB): void {
-    this.selectedTab = tab;
+  setSelectedActivity(value: DATA_PRODUCT_ACTIVITY): void {
+    this.selectedActivity = value;
+  }
+
+  addGroupState(value: AccessPointGroupState): void {
+    this.accessPointGroupStates.push(value);
+    console.log('adding group state to array');
+  }
+
+  deleteGroupState(value: AccessPointGroupState): void {
+    const state = this.accessPointGroupStates.find((a) => a === value);
+    if (state) {
+      deleteEntry(this.accessPointGroupStates, state);
+    }
   }
 
   *convertAccessPointsFuncObjects(): GeneratorFn<void> {
@@ -415,7 +446,13 @@ export class DataProductEditorState extends ElementEditorState {
     group.id = id;
     group.description = description;
     dataProduct_addAccessPointGroup(this.product, group);
-    return new AccessPointGroupState(group, this);
+    const newGroupState = new AccessPointGroupState(group, this);
+    // this.accessPointGroupStates.push(newGroupState);
+    // runInAction(() => {
+    //   this.accessPointGroupStates.push(newGroupState); // Add the new group to the observable array
+    // });
+    this.addGroupState(newGroupState);
+    return newGroupState;
   }
 
   deleteAccessPointGroup(val: AccessPointGroupState): void {

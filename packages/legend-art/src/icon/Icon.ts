@@ -81,6 +81,8 @@ import {
   MdOutlinePushPin,
   MdOutlineShoppingCart,
   MdOutlineHelpOutline,
+  MdError,
+  MdOutlineGroupWork,
 } from 'react-icons/md';
 
 export const ManageSearchIcon = MdManageSearch; // to be reviewed
@@ -121,6 +123,8 @@ export const PushPinIcon = MdOutlinePushPin;
 export const ShoppingCartOutlineIcon = MdOutlineShoppingCart;
 export const HelpOutlineIcon = MdOutlineHelpOutline;
 export const ExpandMoreIcon = MdExpandMore;
+export const ErrorWarnIcon = MdError;
+export const GroupWorkIcon = MdOutlineGroupWork;
 
 //======================================================= VSC =======================================================
 import {
