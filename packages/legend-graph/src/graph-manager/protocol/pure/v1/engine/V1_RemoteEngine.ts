@@ -172,6 +172,7 @@ import {
   V1_LineageInput,
   type V1_LineageModel,
 } from '../model/lineage/V1_Lineage.js';
+import type { RawLineageModel } from '../../../../../graph/metamodel/pure/lineage/LineageModel.js';
 
 class V1_RemoteEngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_RemoteEngine;
@@ -913,10 +914,9 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
       V1_ExecuteInput.serialization.toJson(input),
     );
   }
-
   generateLineage(
     input: V1_LineageInput,
-  ): Promise<PlainObject<V1_LineageModel>> {
+  ): Promise<PlainObject<RawLineageModel>> {
     return this.engineServerClient.generateLineage(
       V1_LineageInput.serialization.toJson(input),
     );

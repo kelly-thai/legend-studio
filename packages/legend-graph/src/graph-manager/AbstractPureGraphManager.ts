@@ -633,10 +633,7 @@ export abstract class AbstractPureGraphManager {
     executionPlan: ExecutionPlan,
   ): RawExecutionPlan;
 
-  abstract buildLineage(
-    executionPlanJson: RawLineageModel,
-    graph: PureModel,
-  ): LineageModel;
+  abstract buildLineage(lineageJSON: RawLineageModel): LineageModel;
 
   abstract serializeExecutionNode(executionNode: ExecutionNode): object;
 

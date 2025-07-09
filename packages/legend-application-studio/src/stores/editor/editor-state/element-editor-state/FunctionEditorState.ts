@@ -58,6 +58,7 @@ import {
   type FunctionActivator,
   CodeCompletionResult,
   type LineageModel,
+  type RawLineageModel,
 } from '@finos/legend-graph';
 import {
   ExecutionPlanState,
@@ -702,14 +703,20 @@ export class FunctionEditorState extends ElementEditorState {
     try {
       this.isGeneratingLineage = true;
       const expressionSequence = this.bodyExpressionSequence;
-      const lineageData =
+      const lineageRawData =
         (yield this.editorStore.graphManagerState.graphManager.generateLineage(
           expressionSequence,
           undefined,
           undefined,
           this.editorStore.graphManagerState.graph,
           undefined,
-        )) as LineageModel;
+        )) as RawLineageModel;
+
+      const lineageData =
+        this.editorStore.graphManagerState.graphManager.buildLineage(
+          lineageRawData,
+        );
+
       this.lineageState.setLineageData(lineageData);
     } catch (error) {
       assertErrorThrown(error);

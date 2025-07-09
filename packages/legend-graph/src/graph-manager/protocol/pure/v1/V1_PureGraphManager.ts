@@ -364,11 +364,11 @@ import {
 } from './helpers/V1_DomainHelper.js';
 import { V1_DataProduct } from './model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_MemSQLFunction } from './model/packageableElements/function/V1_MemSQLFunction.js';
-import { LineageModel } from '../../../../graph/metamodel/pure/lineage/LineageModel.js';
 import {
-  V1_LineageInput,
-  type V1_LineageModel,
-} from './model/lineage/V1_Lineage.js';
+  LineageModel,
+  type RawLineageModel,
+} from '../../../../graph/metamodel/pure/lineage/LineageModel.js';
+import { V1_LineageInput } from './model/lineage/V1_Lineage.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -3196,10 +3196,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  buildLineage(
-    lineageJSON: PlainObject<V1_LineageModel>,
-    graph: PureModel,
-  ): LineageModel {
+  buildLineage(lineageJSON: PlainObject<RawLineageModel>): LineageModel {
     return deserialize(LineageModel, lineageJSON);
   }
 
@@ -4649,7 +4646,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     runtime: Runtime | undefined,
     graph: PureModel,
     _report?: GraphManagerOperationReport,
-  ): Promise<LineageModel> {
+  ): Promise<RawLineageModel> {
     const report = _report ?? createGraphManagerOperationReport();
     const stopWatch = new StopWatch();
 
@@ -4670,7 +4667,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ...Object.fromEntries(stopWatch.records),
       total: stopWatch.elapsed,
     };
-
     return result;
   }
 }

@@ -99,6 +99,7 @@ import type {
   V1_LineageInput,
   V1_LineageModel,
 } from '../model/lineage/V1_Lineage.js';
+import type { RawLineageModel } from '../../../../../graph/metamodel/pure/lineage/LineageModel.js';
 
 export interface V1_GraphManagerEngine {
   config: TEMPORARY__AbstractEngineConfig;
@@ -243,7 +244,7 @@ export interface V1_GraphManagerEngine {
 
   generateLineage: (
     input: V1_LineageInput,
-  ) => Promise<PlainObject<V1_LineageModel>>;
+  ) => Promise<PlainObject<RawLineageModel>>;
 
   debugExecutionPlanGeneration: (
     input: V1_ExecuteInput,

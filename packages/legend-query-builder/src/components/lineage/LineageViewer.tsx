@@ -130,7 +130,7 @@ const LineageViewerContent = observer(
     const { lineageState } = props;
     const selectedTab = lineageState.selectedTab;
     const lineageData = lineageState.lineageData;
-
+    console.log(lineageData);
     // Convert lineage data to React Flow format with safety checks
     const classLineageFlow = convertLineageGraphToFlow(
       lineageData?.classLineage,
