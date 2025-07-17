@@ -51,6 +51,7 @@ import {
   type V1_ValueSpecification,
   V1_entitiesToPureModelContextData,
   V1_ExecuteInput,
+  V1_PureModelContext,
   V1_PureModelContextData,
   V1_serializePureModelContext,
 } from '@finos/legend-graph';
@@ -177,7 +178,7 @@ export const TEST__setUpDataCubeBuilder = async (
         return ENGINE_TEST_SUPPORT__getLambdaReturnType(
           input.lambda as PlainObject<V1_RawLambda>,
           input.model
-            ? (input.model as PlainObject<V1_RawLambda>)
+            ? (input.model as PlainObject<V1_PureModelContext>)
             : V1_serializePureModelContext(pmcd),
         );
       },
@@ -190,7 +191,7 @@ export const TEST__setUpDataCubeBuilder = async (
         return ENGINE_TEST_SUPPORT__getLambdaRelationType(
           input.lambda as PlainObject<V1_RawLambda>,
           input.model
-            ? (input.model as PlainObject<V1_RawLambda>)
+            ? (input.model as PlainObject<V1_PureModelContext>)
             : V1_serializePureModelContext(pmcd),
         );
       },
@@ -203,7 +204,7 @@ export const TEST__setUpDataCubeBuilder = async (
         return ENGINE_TEST_SUPPORT__transformTdsToRelation_lambda(
           input.lambda as PlainObject<V1_RawLambda>,
           input.model
-            ? (input.model as PlainObject<V1_RawLambda>)
+            ? (input.model as PlainObject<V1_PureModelContext>)
             : V1_serializePureModelContext(pmcd),
         );
       },
