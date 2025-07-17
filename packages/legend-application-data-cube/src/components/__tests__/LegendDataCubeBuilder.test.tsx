@@ -154,6 +154,56 @@ test(integrationTest('Loads DataCube from Legend Query'), async () => {
   await screen.findByText('Active', {}, { timeout: 10000 });
 });
 
+test(integrationTest('Test DataCube from LegendQL'), async () => {
+  MockedMonacoEditorAPI.remeasureFonts.mockReturnValue(undefined);
+  const model = {
+    _type: 'text',
+    code: "\n###Runtime\nRuntime H2::Runtime\n{\n  mappings:\n  [\n  ];\n  connections:\n  [\n    H2::Database:\n    [\n      connection_1: H2::Connection\n    ]\n  ];\n}\n\n\n\n###Connection\nRelationalDatabaseConnection H2::Connection\n{\n  store: H2::Database;\n  type: H2;\n  specification: LocalH2\n {\n testDataSetupSqls: [\n 'DROP TABLE IF EXISTS COVID_DATA;',\n 'CREATE TABLE COVID_DATA( \n  ID INT PRIMARY KEY,\n FIPS VARCHAR(200),\n DATE DATE,\n CASE_TYPE VARCHAR(200),\n CASES FLOAT,\n LAST_REPORTED_FLAG BIT\n );',\n 'INSERT INTO COVID_DATA VALUES(1, \'1\', \'2021-04-01\', \'Confirmed\', 405.34343, 0);',\n 'INSERT INTO COVID_DATA VALUES(2, \'2\', \'2021-05-01\', \'Active\', 290.2332233333, 1);',\n 'INSERT INTO COVID_DATA VALUES(3, \'3\', \'2021-08-01\', \'Active\', 20.2332233333, 1);'\n \n ];\n} auth: DefaultH2\n\n}",
+  };
+  const mockDataCubeId = 'test-legendql-datacube-id';
+  const mockDataCube: PersistentDataCube =
+    PersistentDataCube.serialization.fromJson({
+      id: mockDataCubeId,
+      name: `${mockDataCubeId}-name`,
+      description: undefined,
+      content: {
+        query: `#>{H2::Database.COVID_DATA}#->select(~[ID])->limit(2)->from(H2::Runtime)`,
+        _type: 'freeformTDSExpression',
+        source: {
+          _type: 'freeformTDSExpression',
+          query: `#>{H2::Database.COVID_DATA}#->select(~[ID])->limit(2)->from(H2::Runtime)`,
+          runtime: 'H2::Connection',
+          model: model,
+        },
+        configuration: {
+          name: `${mockDataCubeId}-legendql-query-name`,
+          columns: [{ name: 'ID', type: 'INT' }],
+        },
+      },
+    });
+
+  const mockedLegendDataCubeBuilderStore =
+    await TEST__provideMockedLegendDataCubeBuilderStore();
+  await TEST__setUpDataCubeBuilder(
+    guaranteeNonNullable(mockedLegendDataCubeBuilderStore),
+    mockDataCube,
+    undefined,
+    depotEntities,
+  );
+  expect((mockDataCube.content.source as { runtime: string }).runtime).toBe(
+    'H2::Connection',
+  );
+  expect((mockDataCube.content.source as { model: PlainObject }).model).toEqual(
+    model,
+  );
+  expect((mockDataCube.content.source as { query: string }).query).toBe(
+    `#>{H2::Database.COVID_DATA}#->select(~[ID])->limit(2)->from(H2::Runtime)`,
+  );
+  expect((mockDataCube.content.configuration as { name: string }).name).toBe(
+    'test-legendql-datacube-id-legendql-query-name',
+  );
+});
+
 test(
   integrationTest('Loads DataCube from Legend Query with multi-line lambda'),
   async () => {
