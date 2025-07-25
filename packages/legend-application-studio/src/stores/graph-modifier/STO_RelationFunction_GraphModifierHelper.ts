@@ -16,6 +16,7 @@
 import {
   type ConcreteFunctionDefinition,
   type ObserverContext,
+  RelationColumn,
   type RelationFunctionInstanceSetImplementation,
   observe_ConcreteFunctionDefinition,
 } from '@finos/legend-graph';
@@ -33,3 +34,6 @@ export const relationFunction_setRelationFunction = action(
     );
   },
 );
+
+export const isStubbed_RelationColumn = (column: RelationColumn): boolean =>
+  !column.name && !column.genericType.value.rawType;

@@ -125,6 +125,7 @@ import {
 } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import { V1_buildAccessPoint } from './helpers/V1_DataProductBuilder.js';
 import type { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
+import { toJS } from 'mobx';
 
 export class V1_ElementSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -454,9 +455,10 @@ export class V1_ElementSecondPassBuilder
     const func = this.context.currentSubGraph.getOwnFunction(
       V1_buildFullPath(protocol.package, V1_buildFunctionSignature(protocol)),
     );
-    func.returnType = this.context.resolveGenericTypeFromProtocol(
-      protocol.returnGenericType,
-    );
+    func.returnType =
+      this.context.resolveGenericTypeFromProtocolWithRelationType(
+        protocol.returnGenericType,
+      );
     func.returnMultiplicity = this.context.graph.getMultiplicity(
       protocol.returnMultiplicity.lowerBound,
       protocol.returnMultiplicity.upperBound,
