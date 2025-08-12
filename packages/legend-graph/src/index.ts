@@ -737,6 +737,7 @@ export {
   ExternalFormatData,
   type EmbeddedDataVisitor,
 } from './graph/metamodel/pure/data/EmbeddedData.js';
+export * from './graph/metamodel/pure/data/RelationalTestData.js';
 export {
   V1_EmbeddedData,
   V1_DataElementReference,

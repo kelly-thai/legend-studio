@@ -56,6 +56,8 @@ import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js
 import { INTERNAL__UnknownEmbeddedData } from '../../../../../../../graph/metamodel/pure/data/INTERNAL__UnknownEmbeddedData.js';
 import { V1_INTERNAL__UnknownEmbeddedData } from '../../../model/data/V1_INTERNAL__UnknownEmbeddedData.js';
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
+import { RelationalTestData } from '../../../../../../../graph/metamodel/pure/data/RelationalTestData.js';
+import { V1_RelationalTestData } from '../../../model/data/V1_RelationalTestData.js';
 
 // ----------------------------------------------- DATA ----------------------------------------
 
@@ -168,6 +170,15 @@ const V1_transformRelationalCSVData = (
   return data;
 };
 
+const V1_transformRelationalTestData = (
+  element: RelationalTestData,
+): V1_RelationalTestData => {
+  const testData = new V1_RelationalTestData();
+  testData.columns = element.columns;
+  testData.rows = element.rows;
+  return testData;
+};
+
 export function V1_transformEmbeddedData(
   metamodel: EmbeddedData,
   context: V1_GraphTransformerContext,
@@ -184,6 +195,8 @@ export function V1_transformEmbeddedData(
     return V1_transformDataElementReference(metamodel, context);
   } else if (metamodel instanceof RelationalCSVData) {
     return V1_transformRelationalCSVData(metamodel);
+  } else if (metamodel instanceof RelationalTestData) {
+    return V1_transformRelationalTestData(metamodel);
   }
   const extraEmbeddedDataTransformers = context.plugins.flatMap(
     (plugin) =>

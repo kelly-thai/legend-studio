@@ -202,6 +202,7 @@ export enum CORE_HASH_STRUCTURE {
   RELATIONAL_CSV_DATA = 'RELATIONAL_CSV_DATA',
   RELATIONAL_TDS = 'RELATIONAL_TDS',
   RELATIONAL_CSV_DATA_TABLE = 'RELATIONAL_CSV_DATA_TABLE',
+  RELATIONAL_TEST_DATA = 'RELATIONAL_TEST_DATA',
 
   // ---------------------------------- DSL External Format --------------------------------------
 

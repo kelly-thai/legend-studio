@@ -22,6 +22,7 @@ import {
 import type { V1_RelationalCSVData } from './V1_RelationalCSVData.js';
 import type { V1_INTERNAL__UnknownEmbeddedData } from './V1_INTERNAL__UnknownEmbeddedData.js';
 import type { V1_PackageableElementPointer } from '../packageableElements/V1_PackageableElement.js';
+import type { V1_RelationalTestData } from './V1_RelationalTestData.js';
 
 export interface V1_EmbeddedDataVisitor<T> {
   visit_EmbeddedData(data: V1_EmbeddedData): T;
@@ -33,6 +34,7 @@ export interface V1_EmbeddedDataVisitor<T> {
   visit_ModelStoreData(data: V1_ModelStoreData): T;
   visit_DataElementReference(data: V1_DataElementReference): T;
   visit_RelationalData(data: V1_RelationalCSVData): T;
+  visit_RelationalTestData(data: V1_RelationalTestData): T;
 }
 
 export abstract class V1_EmbeddedData implements Hashable {

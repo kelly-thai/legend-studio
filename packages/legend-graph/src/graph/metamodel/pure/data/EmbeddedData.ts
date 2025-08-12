@@ -24,6 +24,7 @@ import type { PackageableElementReference } from '../packageableElements/Package
 import type { RelationalCSVData } from './RelationalCSVData.js';
 import type { INTERNAL__UnknownEmbeddedData } from './INTERNAL__UnknownEmbeddedData.js';
 import type { PackageableElement } from '../packageableElements/PackageableElement.js';
+import type { RelationalTestData } from './RelationalTestData.js';
 
 export interface EmbeddedDataVisitor<T> {
   visit_EmbeddedData(data: EmbeddedData): T;
@@ -33,6 +34,7 @@ export interface EmbeddedDataVisitor<T> {
   visit_ModelStoreData(data: ModelStoreData): T;
   visit_DataElementReference(data: DataElementReference): T;
   visit_RelationalCSVData(data: RelationalCSVData): T;
+  visit_RelationalTestData(data: RelationalTestData): T;
 }
 
 export abstract class EmbeddedData implements Hashable {

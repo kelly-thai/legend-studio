@@ -59,6 +59,7 @@ import {
   PrimitiveType,
   LambdaFunctionInstanceValue,
   DataElement,
+  RelationalTestData,
 } from '@finos/legend-graph';
 import {
   assertTrue,
@@ -78,6 +79,7 @@ import { createMockDataForMappingElementSource } from './MockDataUtils.js';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '@finos/legend-query-builder';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
+// import { RelationalTestData } from '../../../../../legend-graph/src/graph/metamodel/pure/data/RelationalTestData.js';
 
 export const DEFAULT_TEST_ASSERTION_ID = 'assertion_1';
 export const DEFAULT_TEST_ID = 'test_1';
@@ -205,6 +207,10 @@ export class EmbeddedDataCreatorFromEmbeddedData
   }
   visit_RelationalCSVData(data: RelationalCSVData): EmbeddedData {
     const val = new RelationalCSVData();
+    return val;
+  }
+  visit_RelationalTestData(data: RelationalTestData): EmbeddedData {
+    const val = new RelationalTestData();
     return val;
   }
 }

@@ -41,6 +41,8 @@ import type { V1_RelationalCSVData } from '../../../../model/data/V1_RelationalC
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import type { V1_INTERNAL__UnknownEmbeddedData } from '../../../../model/data/V1_INTERNAL__UnknownEmbeddedData.js';
 import { INTERNAL__UnknownEmbeddedData } from '../../../../../../../../graph/metamodel/pure/data/INTERNAL__UnknownEmbeddedData.js';
+import type { V1_RelationalTestData } from '../../../../model/data/V1_RelationalTestData.js';
+import { RelationalTestData } from '../../../../../../../../graph/metamodel/pure/data/RelationalTestData.js';
 
 class V1_EmbeddedDataBuilder implements V1_EmbeddedDataVisitor<EmbeddedData> {
   context: V1_GraphBuilderContext;
@@ -127,6 +129,15 @@ class V1_EmbeddedDataBuilder implements V1_EmbeddedDataVisitor<EmbeddedData> {
       table.values = t.values;
       return table;
     });
+    return metamodel;
+  }
+
+  visit_RelationalTestData(
+    relationalData: V1_RelationalTestData,
+  ): EmbeddedData {
+    const metamodel = new RelationalTestData();
+    metamodel.columns = relationalData.columns;
+    metamodel.rows = relationalData.rows;
     return metamodel;
   }
 }

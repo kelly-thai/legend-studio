@@ -33,6 +33,7 @@ import {
   optional,
   list,
   raw,
+  object,
 } from 'serializr';
 import type { DSL_Data_PureProtocolProcessorPlugin_Extension } from '../../../../extensions/DSL_Data_PureProtocolProcessorPlugin_Extension.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
@@ -58,6 +59,8 @@ import {
 import { V1_INTERNAL__UnknownEmbeddedData } from '../../../model/data/V1_INTERNAL__UnknownEmbeddedData.js';
 import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
+import { V1_RelationalTestData } from '../../../model/data/V1_RelationalTestData.js';
+import { TestDataColumn } from '../../../../../../../graph/metamodel/pure/data/RelationalTestData.js';
 
 export const V1_DATA_ELEMENT_PROTOCOL_TYPE = 'dataElement';
 
@@ -71,6 +74,7 @@ export enum V1_EmbeddedDataType {
   EXTERNAL_FORMAT_DATA = 'externalFormat',
   DATA_ELEMENT_REFERENCE = 'reference',
   RELATIONAL_DATA = 'relationalCSVData',
+  RELATIONAL_TEST_DATA = 'relationalTestData',
 }
 
 const V1_dataModelDataSchema = (
@@ -178,6 +182,20 @@ const V1_relationalDataModelSchema = createModelSchema(V1_RelationalCSVData, {
   tables: list(usingModelSchema(V1_relationalDataTableModelSchema)),
 });
 
+const V1_relationalTestDataModelSchema = createModelSchema(
+  V1_RelationalTestData,
+  {
+    _type: usingConstantValueSchema(V1_EmbeddedDataType.RELATIONAL_TEST_DATA),
+    columns: list(object(TestDataColumn)), //KXT TODO double check serialization
+    rows: list(
+      custom(
+        (row) => row,
+        (serializedRow) => serializedRow,
+      ),
+    ),
+  },
+);
+
 export function V1_serializeEmbeddedDataType(
   protocol: V1_EmbeddedData,
   plugins: PureProtocolProcessorPlugin[],
@@ -192,6 +210,8 @@ export function V1_serializeEmbeddedDataType(
     return serialize(V1_dataElementReferenceModelSchema, protocol);
   } else if (protocol instanceof V1_RelationalCSVData) {
     return serialize(V1_relationalDataModelSchema, protocol);
+  } else if (protocol instanceof V1_RelationalTestData) {
+    return serialize(V1_relationalTestDataModelSchema, protocol);
   }
   const extraEmbeddedDataSerializers = plugins.flatMap(
     (plugin) =>
@@ -225,6 +245,8 @@ export function V1_deserializeEmbeddedDataType(
       return deserialize(V1_dataElementReferenceModelSchema, json);
     case V1_EmbeddedDataType.RELATIONAL_DATA:
       return deserialize(V1_relationalDataModelSchema, json);
+    case V1_EmbeddedDataType.RELATIONAL_TEST_DATA:
+      return deserialize(V1_relationalTestDataModelSchema, json);
     default: {
       const extraEmbeddedDataProtocolDeserializers = plugins.flatMap(
         (plugin) =>

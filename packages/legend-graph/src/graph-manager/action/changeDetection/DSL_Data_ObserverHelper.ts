@@ -41,6 +41,7 @@ import {
   observe_TaggedValue,
 } from './DomainObserverHelper.js';
 import { INTERNAL__UnknownEmbeddedData } from '../../../graph/metamodel/pure/data/INTERNAL__UnknownEmbeddedData.js';
+import { RelationalTestData } from '../../../graph/metamodel/pure/data/RelationalTestData.js';
 
 export const observe_ExternalFormatData = skipObserved(
   (metamodel: ExternalFormatData): ExternalFormatData => {
@@ -130,6 +131,16 @@ export const observe_RelationalDataTable = skipObserved(
   },
 );
 
+export const observe_RelationalTestData = skipObserved(
+  (metamodel: RelationalTestData): RelationalTestData => {
+    makeObservable(metamodel, {
+      columns: observable,
+      rows: observable,
+    });
+    return metamodel;
+  },
+);
+
 const observe_RelationalCSVData = skipObserved(
   (metamodel: RelationalCSVData): RelationalCSVData => {
     makeObservable(metamodel, {
@@ -165,6 +176,8 @@ export function observe_EmbeddedData(
     return observe_ModelStoreData(metamodel, context);
   } else if (metamodel instanceof RelationalCSVData) {
     return observe_RelationalCSVData(metamodel);
+  } else if (metamodel instanceof RelationalTestData) {
+    return observe_RelationalTestData(metamodel);
   }
   const extraEmbeddedDataObservers = context.plugins.flatMap(
     (plugin) =>

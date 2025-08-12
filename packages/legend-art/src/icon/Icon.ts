@@ -402,6 +402,7 @@ import {
   FaRegUserCircle,
   FaRegBell,
   FaBuilding,
+  FaFileExport,
 } from 'react-icons/fa';
 
 import { PiFunctionBold } from 'react-icons/pi';
@@ -545,6 +546,7 @@ export const ShoppingCartIcon = FaShoppingCart;
 export const UserCircleIcon = FaRegUserCircle;
 export const BellIcon = FaRegBell;
 export const BuildingIcon = FaBuilding;
+export const FileExportIcon = FaFileExport;
 //======================================================= GI =======================================================
 import {
   GiWaterDrop,
