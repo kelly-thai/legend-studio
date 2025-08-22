@@ -24,6 +24,7 @@ import { CORE_HASH_STRUCTURE } from '../../../../graph/Core_HashUtils.js';
 import { type EmbeddedDataVisitor, EmbeddedData } from './EmbeddedData.js';
 import { createModelSchema, primitive } from 'serializr';
 
+//KXT IGNORE
 export class TestDataColumn {
   name!: string;
   type!: string;
@@ -40,14 +41,32 @@ export class TestDataColumn {
   );
 }
 
+//KXT IGNORE
 export interface TestDataRow {
   [columnName: string]: string;
 }
 
+export class RelationRowTestData {
+  rowValues: string[] = [];
+}
+
+export class RelationElement {
+  paths: string[] = [];
+  columns: string[] = [];
+  rows: RelationRowTestData[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      //KXT TODO implement this
+    ]);
+  }
+}
+
 export class RelationalTestData extends EmbeddedData implements Hashable {
-  //KXT does this need to be renamed?
-  columns: TestDataColumn[] = [];
-  rows: TestDataRow[] = [];
+  //KXT does this need to be renamed? to RelationElementData to match engine
+  // columns: TestDataColumn[] = [];
+  // rows: TestDataRow[] = [];
+  relationElements: RelationElement[] = [];
 
   accept_EmbeddedDataVisitor<T>(visitor: EmbeddedDataVisitor<T>): T {
     return visitor.visit_RelationalTestData(this);
@@ -56,19 +75,19 @@ export class RelationalTestData extends EmbeddedData implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_TEST_DATA,
-      //KXT double check if this is right
-      hashArray(
-        this.columns.map((column) => hashArray([column.name, column.type])),
-      ),
-      hashArray(
-        this.rows.map((row) =>
-          hashArray(
-            Object.entries(row).map(([columnName, value]) =>
-              hashArray([columnName, value]),
-            ),
-          ),
-        ),
-      ),
+      //KXT TODO implement this
+      // hashArray(
+      //   this.columns.map((column) => hashArray([column.name, column.type])),
+      // ),
+      // hashArray(
+      //   this.rows.map((row) =>
+      //     hashArray(
+      //       Object.entries(row).map(([columnName, value]) =>
+      //         hashArray([columnName, value]),
+      //       ),
+      //     ),
+      //   ),
+      // ),
     ]);
   }
 }

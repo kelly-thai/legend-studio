@@ -41,7 +41,11 @@ import {
   observe_TaggedValue,
 } from './DomainObserverHelper.js';
 import { INTERNAL__UnknownEmbeddedData } from '../../../graph/metamodel/pure/data/INTERNAL__UnknownEmbeddedData.js';
-import { RelationalTestData } from '../../../graph/metamodel/pure/data/RelationalTestData.js';
+import {
+  RelationalTestData,
+  RelationElement,
+  RelationRowTestData,
+} from '../../../graph/metamodel/pure/data/RelationalTestData.js';
 
 export const observe_ExternalFormatData = skipObserved(
   (metamodel: ExternalFormatData): ExternalFormatData => {
@@ -131,12 +135,36 @@ export const observe_RelationalDataTable = skipObserved(
   },
 );
 
+export const observe_RelationalRowTestData = skipObserved(
+  (metamodel: RelationRowTestData): RelationRowTestData => {
+    makeObservable(metamodel, {
+      rowValues: observable,
+    });
+    return metamodel;
+  },
+);
+
+export const observe_RelationElement = skipObserved(
+  (metamodel: RelationElement): RelationElement => {
+    makeObservable(metamodel, {
+      paths: observable,
+      columns: observable,
+      rows: observable,
+      hashCode: computed,
+    });
+    metamodel.rows.forEach(observe_RelationalRowTestData);
+    return metamodel;
+  },
+);
+
 export const observe_RelationalTestData = skipObserved(
   (metamodel: RelationalTestData): RelationalTestData => {
     makeObservable(metamodel, {
-      columns: observable,
-      rows: observable,
+      // columns: observable,
+      // rows: observable,
+      hashCode: computed,
     });
+    metamodel.relationElements.forEach(observe_RelationElement);
     return metamodel;
   },
 );

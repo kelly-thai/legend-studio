@@ -80,11 +80,12 @@
       @include flexVCenter;
 
       height: 100%;
-      width: calc(100% - 2.8rem);
-      max-width: calc(100% - 2.8rem);
+      width: 100%; //calc(100% - 2.8rem)
+      // max-width: calc(100% - 2.8rem);
       background: none;
       color: inherit;
       padding-left: 1rem;
+      justify-content: space-between;
     }
 
     &__item__label__icon {

@@ -732,27 +732,27 @@ const ServiceTestItem = observer(
             onClick={openTest}
             tabIndex={-1}
           >
+            <div className="mapping-test-explorer__item__actions">
+              <button
+                className="mapping-test-explorer__item__action mapping-test-explorer__run-test-btn"
+                onClick={runTest}
+                disabled={
+                  suiteState.runningTestState.isInProgress ||
+                  serviceTestState.runningTestAction.isInProgress
+                }
+                tabIndex={-1}
+                title={`Run ${serviceTest.id}`}
+              >
+                {<PlayIcon />}
+              </button>
+              <div className="testable-test-explorer__item__label__text">
+                {serviceTest.id}
+              </div>
+            </div>
             <div className="testable-test-explorer__item__label__icon">
               {resultIcon}
             </div>
-            <div className="testable-test-explorer__item__label__text">
-              {serviceTest.id}
-            </div>
           </button>
-          <div className="mapping-test-explorer__item__actions">
-            <button
-              className="mapping-test-explorer__item__action mapping-test-explorer__run-test-btn"
-              onClick={runTest}
-              disabled={
-                suiteState.runningTestState.isInProgress ||
-                serviceTestState.runningTestAction.isInProgress
-              }
-              tabIndex={-1}
-              title={`Run ${serviceTest.id}`}
-            >
-              {<PlayIcon />}
-            </button>
-          </div>
         </div>
       </ContextMenu>
     );

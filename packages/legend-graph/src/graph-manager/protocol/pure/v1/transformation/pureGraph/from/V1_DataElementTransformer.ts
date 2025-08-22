@@ -174,8 +174,9 @@ const V1_transformRelationalTestData = (
   element: RelationalTestData,
 ): V1_RelationalTestData => {
   const testData = new V1_RelationalTestData();
-  testData.columns = element.columns;
-  testData.rows = element.rows;
+  // testData.columns = element.columns;
+  // testData.rows = element.rows;
+  testData.relationElements = element.relationElements;
   return testData;
 };
 

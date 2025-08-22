@@ -21,13 +21,16 @@ import {
 } from './V1_EmbeddedData.js';
 import { CORE_HASH_STRUCTURE } from '../../../../../../graph/Core_HashUtils.js';
 import type {
+  RelationElement,
   TestDataColumn,
   TestDataRow,
 } from '../../../../../../graph/metamodel/pure/data/RelationalTestData.js';
 
 export class V1_RelationalTestData extends V1_EmbeddedData implements Hashable {
-  columns: TestDataColumn[] = [];
-  rows: TestDataRow[] = [];
+  //KXT does this need to be renamed? to RelationElementData to match engine
+  // columns: TestDataColumn[] = [];
+  // rows: TestDataRow[] = [];
+  relationElements!: RelationElement[];
 
   accept_EmbeddedDataVisitor<T>(visitor: V1_EmbeddedDataVisitor<T>): T {
     return visitor.visit_RelationalTestData(this);
@@ -36,19 +39,19 @@ export class V1_RelationalTestData extends V1_EmbeddedData implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.RELATIONAL_TEST_DATA,
-      //KXT double check if this is right
-      hashArray(
-        this.columns.map((column) => hashArray([column.name, column.type])),
-      ),
-      hashArray(
-        this.rows.map((row) =>
-          hashArray(
-            Object.entries(row).map(([columnName, value]) =>
-              hashArray([columnName, value]),
-            ),
-          ),
-        ),
-      ),
+      //KXT TODO implement this
+      // hashArray(
+      //   this.columns.map((column) => hashArray([column.name, column.type])),
+      // ),
+      // hashArray(
+      //   this.rows.map((row) =>
+      //     hashArray(
+      //       Object.entries(row).map(([columnName, value]) =>
+      //         hashArray([columnName, value]),
+      //       ),
+      //     ),
+      //   ),
+      // ),
     ]);
   }
 }

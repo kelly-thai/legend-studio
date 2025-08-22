@@ -199,12 +199,6 @@ const FunctionTestSuiteItem = observer(
           onClick={openSuite}
           tabIndex={-1}
         >
-          <div className="testable-test-explorer__item__label__icon">
-            {resultIcon}
-          </div>
-          <div className="testable-test-explorer__item__label__text">
-            {suite.id}
-          </div>
           <div className="mapping-test-explorer__item__actions">
             <button
               className="mapping-test-explorer__item__action mapping-test-explorer__run-test-btn"
@@ -215,6 +209,12 @@ const FunctionTestSuiteItem = observer(
             >
               {<PlayIcon />}
             </button>
+            <div className="testable-test-explorer__item__label__text">
+              {suite.id}
+            </div>
+          </div>
+          <div className="testable-test-explorer__item__label__icon">
+            {resultIcon}
           </div>
         </button>
       </ContextMenu>
@@ -771,12 +771,6 @@ const FunctionTestItem = observer(
           onClick={openTest}
           tabIndex={-1}
         >
-          <div className="testable-test-explorer__item__label__icon">
-            {resultIcon}
-          </div>
-          <div className="testable-test-explorer__item__label__text">
-            {functionTest.id}
-          </div>
           <div className="mapping-test-explorer__item__actions">
             <button
               className="mapping-test-explorer__item__action mapping-test-explorer__run-test-btn"
@@ -787,6 +781,12 @@ const FunctionTestItem = observer(
             >
               {<PlayIcon />}
             </button>
+            <div className="testable-test-explorer__item__label__text">
+              {functionTest.id}
+            </div>
+          </div>
+          <div className="testable-test-explorer__item__label__icon">
+            {resultIcon}
           </div>
         </button>
       </ContextMenu>
@@ -962,7 +962,7 @@ const FunctionTestSuiteEditor = observer(
       <ResizablePanelGroup orientation="horizontal">
         <ResizablePanel size={300} minSize={28}>
           <div className="service-test-data-editor panel">
-            {functionTestSuiteState.dataState.dataHolder.testData?.length ? (
+            {functionTestSuiteState.dataState.dataHolder.testData?.length ? ( //KXT i think this is the check for data display
               <>
                 {dataState.selectedDataState && (
                   <FunctionTestDataStateEditor

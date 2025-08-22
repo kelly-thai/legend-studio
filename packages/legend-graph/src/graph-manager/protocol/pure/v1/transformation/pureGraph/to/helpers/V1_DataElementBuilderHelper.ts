@@ -136,8 +136,9 @@ class V1_EmbeddedDataBuilder implements V1_EmbeddedDataVisitor<EmbeddedData> {
     relationalData: V1_RelationalTestData,
   ): EmbeddedData {
     const metamodel = new RelationalTestData();
-    metamodel.columns = relationalData.columns;
-    metamodel.rows = relationalData.rows;
+    // metamodel.columns = relationalData.columns;
+    // metamodel.rows = relationalData.rows;
+    metamodel.relationElements = relationalData.relationElements; //KXT do i need to build each element?
     return metamodel;
   }
 }

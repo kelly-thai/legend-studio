@@ -183,6 +183,7 @@
     @include flexVCenter;
 
     height: 100%;
+    gap: 0.5rem;
   }
 
   &__item__run-time {
@@ -200,7 +201,7 @@
 
   &__item__action {
     height: 100%;
-    width: 2.8rem;
+    // width: 2.8rem;
     color: var(--color-dark-grey-400);
   }
 

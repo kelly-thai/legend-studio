@@ -1150,12 +1150,6 @@ const MappingTestItem = observer(
           onClick={openTest}
           tabIndex={-1}
         >
-          <div className="testable-test-explorer__item__label__icon">
-            {resultIcon}
-          </div>
-          <div className="testable-test-explorer__item__label__text">
-            {mappingTest.id}
-          </div>
           <div className="mapping-test-explorer__item__actions">
             <button
               className="mapping-test-explorer__item__action mapping-test-explorer__run-test-btn"
@@ -1166,6 +1160,12 @@ const MappingTestItem = observer(
             >
               {<PlayIcon />}
             </button>
+            <div className="testable-test-explorer__item__label__text">
+              {mappingTest.id}
+            </div>
+          </div>
+          <div className="testable-test-explorer__item__label__icon">
+            {resultIcon}
           </div>
         </button>
       </ContextMenu>
@@ -1347,12 +1347,6 @@ const MappingTestSuiteItem = observer(
           onClick={openSuite}
           tabIndex={-1}
         >
-          <div className="testable-test-explorer__item__label__icon">
-            {resultIcon}
-          </div>
-          <div className="testable-test-explorer__item__label__text">
-            {suite.id}
-          </div>
           <div className="mapping-test-explorer__item__actions">
             <button
               className="mapping-test-explorer__item__action mapping-test-explorer__run-test-btn"
@@ -1363,6 +1357,12 @@ const MappingTestSuiteItem = observer(
             >
               {<PlayIcon />}
             </button>
+            <div className="testable-test-explorer__item__label__text">
+              {suite.id}
+            </div>
+          </div>
+          <div className="testable-test-explorer__item__label__icon">
+            {resultIcon}
           </div>
         </button>
       </ContextMenu>

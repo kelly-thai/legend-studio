@@ -60,6 +60,7 @@ import {
   buildLambdaVariableExpressions,
   EqualTo,
   ModelStore,
+  RelationalTestData,
 } from '@finos/legend-graph';
 import {
   TestablePackageableElementEditorState,
@@ -754,7 +755,7 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
   setCreateSuite(val: boolean): void {
     this.createSuiteModal = val;
   }
-
+  //KXT create test suite here
   createSuite(suiteName: string, testName: string): void {
     const functionSuite = new FunctionTestSuite();
     functionSuite.id = suiteName;
@@ -790,14 +791,17 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
         );
         const store = guaranteeNonNullable(stores[0]);
         const data = new FunctionStoreTestData();
+        console.log('store: ', store); //KXT TODO add to function testing here
         if (store instanceof Database) {
           const relational = new RelationalCSVData();
+          // const relational = new RelationalTestData();
           data.store = PackageableElementExplicitReference.create(store);
           data.data = relational;
         } else if (store instanceof ModelStore) {
           const modelStoreData = createBareExternalFormat();
           data.store = PackageableElementExplicitReference.create(store);
           data.data = modelStoreData;
+          // } else if (store instanceof ) {
         } else {
           throw new UnsupportedOperationError(
             `function test store data does not support store: ${store.path}`,

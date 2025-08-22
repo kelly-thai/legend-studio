@@ -27,6 +27,11 @@ import {
   RelationalTestData,
   type TestDataColumn,
   type TestDataRow,
+  RelationalOperationElement,
+  RelationElement,
+  RelationRowTestData,
+  observe_RelationElement,
+  observe_RelationalRowTestData,
 } from '@finos/legend-graph';
 import {
   ContentType,
@@ -35,7 +40,7 @@ import {
   UnsupportedOperationError,
   uuid,
 } from '@finos/legend-shared';
-import { action, makeObservable, observable } from 'mobx';
+import { action, isObservable, makeObservable, observable } from 'mobx';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
@@ -48,6 +53,7 @@ import {
 } from '../../../../graph-modifier/DSL_Data_GraphModifierHelper.js';
 import { EmbeddedDataType } from '../../ExternalFormatState.js';
 import { TEMPORARY__createRelationalDataFromCSV } from '../../../utils/TestableUtils.js';
+// import { observe_RelationElement } from '../../../../../../../legend-graph/src/graph-manager/action/changeDetection/DSL_Data_ObserverHelper.js';
 // import { RelationalTestData, type TestDataColumn, type TestDataRow } from '../../../../../../../legend-graph/src/graph/metamodel/pure/data/RelationalTestData.js';
 
 export const createEmbeddedData = (
@@ -235,120 +241,155 @@ export class RelationalCSVDataTableState {
 //   [columnName: string]: string;
 // }
 
-export class RelationalTestDataState extends EmbeddedDataState {
-  override embeddedData: RelationalTestData;
-  // columns: TestDataColumn[] = [];
-  // rows: TestDataRow[] = [];
-  showImportCSVModal = false;
+export class RelationElementState {
+  relationElement: RelationElement;
+  testDataState: RelationalTestDataState; //KXT TODO is this necessary?
 
-  constructor(editorStore: EditorStore, embeddedData: RelationalTestData) {
-    super(editorStore, embeddedData);
+  constructor(
+    relationElement: RelationElement,
+    testDataState: RelationalTestDataState,
+  ) {
+    //KXT TODO need to create this state for each in array
     makeObservable(this, {
-      // columns: observable,
-      // rows: observable,
-      embeddedData: observable,
-      showImportCSVModal: observable,
+      relationElement: observable,
+      testDataState: observable,
       addColumn: action,
       removeColumn: action,
       updateColumn: action,
       addRow: action,
       removeRow: action,
       updateRow: action,
-      importCSV: action,
-      setShowImportCSVModal: action,
       clearAllData: action,
+      importCSV: action,
     });
-    this.embeddedData = embeddedData;
+    this.testDataState = testDataState;
+    this.relationElement = relationElement;
+    this.relationElement = observe_RelationElement(relationElement);
   }
 
-  label(): string {
-    return 'Relational Test Data';
-  }
-
-  addColumn(name: string, type: string): void {
-    this.embeddedData.columns.push({ name, type });
-    this.embeddedData.rows.forEach((row) => {
-      row[name] = '';
+  addColumn(name: string): void {
+    this.relationElement.columns.push(name);
+    this.relationElement.rows.forEach((row) => {
+      row.rowValues.push('');
     });
+    console.log('added column! ', this.relationElement);
+    console.log('checking test data obj: ', this.testDataState);
   }
 
   removeColumn(index: number): void {
-    const columnName = this.embeddedData.columns[index]?.name;
-    if (columnName) {
-      this.embeddedData.columns.splice(index, 1);
-      this.embeddedData.rows.forEach((row) => {
-        delete row[columnName];
+    const columnToRemove = this.relationElement.columns[index];
+    if (columnToRemove) {
+      this.relationElement.columns.splice(index, 1);
+      this.relationElement.rows.forEach((row) => {
+        delete row.rowValues[index];
       });
     }
   }
 
-  updateColumn(index: number, name: string, type: string): void {
-    const oldName = this.embeddedData.columns[index]?.name;
+  updateColumn(index: number, name: string): void {
+    const oldName = this.relationElement.columns[index];
     if (oldName && oldName !== name) {
-      this.embeddedData.rows.forEach((row) => {
+      this.relationElement.rows.forEach((row) => {
         if (oldName in row) {
-          const oldValue = row[oldName];
+          const oldValue = row.rowValues[index];
           if (oldValue !== undefined) {
-            row[name] = oldValue;
+            row.rowValues[index] = oldValue;
           }
-          delete row[oldName];
+          delete row.rowValues[index];
         }
       });
     }
-    this.embeddedData.columns[index] = { name, type };
+    this.relationElement.columns[index] = name;
+    console.log('updated row: ', this.relationElement);
   }
 
   addRow(): void {
-    const newRow: TestDataRow = {};
-    this.embeddedData.columns.forEach((col) => {
-      newRow[col.name] = '';
+    const newRow = observe_RelationalRowTestData(new RelationRowTestData());
+    this.relationElement.columns.forEach((col) => {
+      newRow.rowValues.push('');
     });
-    this.embeddedData.rows.push(newRow);
+    this.relationElement.rows.push(newRow);
+    console.log('added row: ', this.relationElement);
   }
 
   removeRow(index: number): void {
-    this.embeddedData.rows.splice(index, 1);
+    this.relationElement.rows.splice(index, 1);
   }
 
-  updateRow(rowIndex: number, columnName: string, value: string): void {
-    if (this.embeddedData.rows[rowIndex]) {
-      this.embeddedData.rows[rowIndex][columnName] = value;
+  updateRow(rowIndex: number, columnIndex: number, value: string): void {
+    console.log('updating row with this value: ', value);
+    if (this.relationElement.rows[rowIndex]) {
+      this.relationElement.rows[rowIndex].rowValues[columnIndex] = value;
     }
+    console.log(
+      'observable? : ',
+      isObservable(this.relationElement.rows[0]?.rowValues),
+    );
+    // console.log('updated row: ', this.relationElement);
   }
 
   clearAllData(): void {
-    this.embeddedData.rows.splice(0);
+    this.relationElement.rows.splice(0);
   }
 
-  setShowImportCSVModal(show: boolean): void {
-    this.showImportCSVModal = show;
+  exportJSON(): string {
+    return JSON.stringify(
+      {
+        columns: this.relationElement.columns,
+        data: this.relationElement.rows,
+      },
+      null,
+      2,
+    );
   }
 
-  importCSV(csvContent: string): void {
-    const lines = csvContent.trim().split('\n');
-    if (lines.length === 0) {
-      return;
+  exportSQL(): string {
+    if (
+      this.relationElement.columns.length === 0 ||
+      this.relationElement.rows.length === 0
+    ) {
+      return '';
     }
 
-    const firstLine = lines[0];
-    if (!firstLine) {
-      return;
-    }
+    const tableName = 'test_data';
+    const defaultDataType = 'VARCHAR(255)'; //KXT TODO col type needed for sql??
+    const columnDefs = this.relationElement.columns
+      .map((col) => `${col} ${defaultDataType}`)
+      .join(', ');
+    const createTable = `CREATE TABLE ${tableName} (${columnDefs});`;
 
-    const headers = this.parseCSVLine(firstLine);
-    this.embeddedData.columns = headers.map((header) => ({
-      name: header,
-      type: this.detectColumnType(lines.slice(1), headers.indexOf(header)),
-    }));
-
-    this.embeddedData.rows = lines.slice(1).map((line) => {
-      const values = this.parseCSVLine(line);
-      const row: TestDataRow = {};
-      headers.forEach((header, index) => {
-        row[header] = values[index] ?? '';
-      });
-      return row;
+    const insertStatements = this.relationElement.rows.map((row) => {
+      const values = this.relationElement.columns
+        .map((col, colIndex) => {
+          const value = row.rowValues[colIndex] ?? '';
+          if (typeof value === 'string' && value !== '') {
+            return `'${value.replace(/'/g, "''")}'`;
+          }
+          return value || 'NULL';
+        })
+        .join(', ');
+      return `INSERT INTO ${tableName} VALUES (${values});`;
     });
+
+    return [createTable, '', ...insertStatements].join('\n');
+  }
+
+  exportCSV(): string {
+    const headers = this.relationElement.columns.map((col) => col);
+    const csvLines = [headers.join(',')];
+
+    this.relationElement.rows.forEach((row) => {
+      const values = headers.map((header, headerIndex) => {
+        const value = row.rowValues[headerIndex] ?? '';
+        if (value.includes(',') || value.includes('"')) {
+          return `"${value.replace(/"/g, '""')}"`;
+        }
+        return value;
+      });
+      csvLines.push(values.join(','));
+    });
+
+    return csvLines.join('\n');
   }
 
   private parseCSVLine(line: string): string[] {
@@ -371,89 +412,90 @@ export class RelationalTestDataState extends EmbeddedDataState {
     return result;
   }
 
-  private detectColumnType(dataRows: string[], columnIndex: number): string {
-    const values = dataRows
-      .map((row) => this.parseCSVLine(row)[columnIndex])
-      .filter((v): v is string => v !== undefined && v !== '');
-    if (values.length === 0) {
-      return 'VARCHAR';
+  importCSV(csvContent: string): void {
+    const lines = csvContent.trim().split('\n');
+    if (lines.length === 0) {
+      return;
     }
 
-    const isInteger = values.every((v) => /^\d+$/.test(v));
-    if (isInteger) {
-      return 'INTEGER';
+    const firstLine = lines[0];
+    if (!firstLine) {
+      return;
     }
 
-    const isDecimal = values.every((v) => /^\d*\.?\d+$/.test(v));
-    if (isDecimal) {
-      return 'DECIMAL';
-    }
+    const headers = this.parseCSVLine(firstLine);
+    this.relationElement.columns = headers.map((header) => header);
 
-    const isDate = values.every((v) => !isNaN(Date.parse(v)));
-    if (isDate) {
-      return 'DATE';
-    }
-
-    return 'VARCHAR';
-  }
-
-  exportCSV(): string {
-    const headers = this.embeddedData.columns.map((col) => col.name);
-    const csvLines = [headers.join(',')];
-
-    this.embeddedData.rows.forEach((row) => {
-      const values = headers.map((header) => {
-        const value = row[header] ?? '';
-        if (value.includes(',') || value.includes('"')) {
-          return `"${value.replace(/"/g, '""')}"`;
-        }
-        return value;
+    this.relationElement.rows = lines.slice(1).map((line) => {
+      const values = this.parseCSVLine(line);
+      const row = new RelationRowTestData();
+      headers.forEach((header, index) => {
+        row.rowValues[index] = values[index] ?? '';
       });
-      csvLines.push(values.join(','));
+      return row;
     });
-
-    return csvLines.join('\n');
   }
+}
 
-  exportJSON(): string {
-    return JSON.stringify(
-      {
-        columns: this.embeddedData.columns,
-        data: this.embeddedData.rows,
-      },
-      null,
-      2,
+export class RelationalTestDataState extends EmbeddedDataState {
+  override embeddedData: RelationalTestData;
+  // columns: TestDataColumn[] = [];
+  // rows: TestDataRow[] = [];
+  showImportCSVModal = false;
+  showNewRelationalElementModal = false;
+  activeRelationElement: RelationElementState | undefined;
+  relationElementStates: RelationElementState[];
+
+  constructor(editorStore: EditorStore, embeddedData: RelationalTestData) {
+    super(editorStore, embeddedData);
+    makeObservable(this, {
+      // columns: observable,
+      // rows: observable,
+      embeddedData: observable,
+      showImportCSVModal: observable,
+      showNewRelationalElementModal: observable,
+      activeRelationElement: observable,
+      setActiveRelationElement: action,
+      // addColumn: action,
+      // removeColumn: action,
+      // updateColumn: action,
+      // addRow: action,
+      // removeRow: action,
+      // updateRow: action,
+      // importCSV: action,
+      setShowImportCSVModal: action,
+      setShowNewRelationalElementModal: action,
+      addRelationElement: action,
+      // clearAllData: action,
+    });
+    this.embeddedData = embeddedData;
+    this.relationElementStates = embeddedData.relationElements.map(
+      (relationElement) => new RelationElementState(relationElement, this),
     );
   }
 
-  exportSQL(): string {
-    if (
-      this.embeddedData.columns.length === 0 ||
-      this.embeddedData.rows.length === 0
-    ) {
-      return '';
-    }
+  label(): string {
+    return 'Relational Test Data';
+  }
 
-    const tableName = 'test_data';
-    const columnDefs = this.embeddedData.columns
-      .map((col) => `${col.name} ${col.type}`)
-      .join(', ');
-    const createTable = `CREATE TABLE ${tableName} (${columnDefs});`;
+  setActiveRelationElement(val: RelationElementState | undefined): void {
+    this.activeRelationElement = val;
+  }
 
-    const insertStatements = this.embeddedData.rows.map((row) => {
-      const values = this.embeddedData.columns
-        .map((col) => {
-          const value = row[col.name] ?? '';
-          if (col.type === 'VARCHAR' || col.type === 'DATE') {
-            return `'${value.replace(/'/g, "''")}'`;
-          }
-          return value || 'NULL';
-        })
-        .join(', ');
-      return `INSERT INTO ${tableName} VALUES (${values});`;
-    });
+  addRelationElement(relationElement: RelationElement): void {
+    const newElementState = new RelationElementState(relationElement, this);
+    this.relationElementStates.push(newElementState);
+    this.embeddedData.relationElements.push(relationElement);
+    this.setActiveRelationElement(newElementState);
+    console.log('added element! ', this.embeddedData);
+  }
 
-    return [createTable, '', ...insertStatements].join('\n');
+  setShowImportCSVModal(show: boolean): void {
+    this.showImportCSVModal = show;
+  }
+
+  setShowNewRelationalElementModal(show: boolean): void {
+    this.showNewRelationalElementModal = show;
   }
 }
 
@@ -597,7 +639,7 @@ export class DataElementReferenceState extends EmbeddedDataState {
   }
 }
 
-export function buildEmbeddedDataEditorState(
+export function buildEmbeddedDataEditorState( //KXT options is used here
   _embeddedData: EmbeddedData,
   editorStore: EditorStore,
   options?: EmbeddedDataStateOption,
