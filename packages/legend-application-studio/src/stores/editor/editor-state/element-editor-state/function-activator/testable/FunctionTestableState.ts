@@ -61,6 +61,7 @@ import {
   EqualTo,
   ModelStore,
   RelationalTestData,
+  LakehouseRuntime,
 } from '@finos/legend-graph';
 import {
   TestablePackageableElementEditorState,
@@ -791,17 +792,21 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
         );
         const store = guaranteeNonNullable(stores[0]);
         const data = new FunctionStoreTestData();
-        console.log('store: ', store); //KXT TODO add to function testing here
-        if (store instanceof Database) {
+        console.log('store: ', store);
+        if (engineRuntime instanceof LakehouseRuntime) {
+          //KXT double check this implementation
+          const testData = new RelationalTestData();
+          data.store = data.store =
+            PackageableElementExplicitReference.create(store);
+          data.data = testData;
+        } else if (store instanceof Database) {
           const relational = new RelationalCSVData();
-          // const relational = new RelationalTestData();
           data.store = PackageableElementExplicitReference.create(store);
           data.data = relational;
         } else if (store instanceof ModelStore) {
           const modelStoreData = createBareExternalFormat();
           data.store = PackageableElementExplicitReference.create(store);
           data.data = modelStoreData;
-          // } else if (store instanceof ) {
         } else {
           throw new UnsupportedOperationError(
             `function test store data does not support store: ${store.path}`,
