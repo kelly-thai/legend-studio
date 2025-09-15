@@ -19,6 +19,7 @@ import {
   ActionState,
   assertErrorThrown,
   isNonEmptyString,
+  LogEvent,
   type GeneratorFn,
 } from '@finos/legend-shared';
 import {
@@ -33,11 +34,25 @@ import {
 } from '@finos/legend-graph';
 import type { MarketplaceLakehouseStore } from '../MarketplaceLakehouseStore.js';
 import { getDataProductFromDetails } from '../LakehouseUtils.js';
+import { LEGEND_MARKETPLACE_APP_EVENT } from '../../../__lib__/LegendMarketplaceAppEvent.js';
 
 export enum DataProductType {
   LAKEHOUSE = 'LAKEHOUSE',
   UNKNOWN = 'UNKNOWN',
 }
+
+const getDataProductDescriptorFromDetails = (
+  details: V1_EntitlementsDataProductDetails,
+): string => {
+  let name = details.dataProduct.name;
+  const origin = details.origin;
+  if (origin instanceof V1_SdlcDeploymentDataProductOrigin) {
+    name += ` (${origin.artifact}:${origin.group}:${origin.version})`;
+  } else if (origin instanceof V1_AdHocDeploymentDataProductOrigin) {
+    name += ` (Adhoc)`;
+  }
+  return name;
+};
 
 export class DataProductState {
   readonly lakehouseState: MarketplaceLakehouseStore;
@@ -90,8 +105,9 @@ export class DataProductState {
       )) as V1_DataProduct | undefined;
     } catch (error) {
       assertErrorThrown(error);
-      this.lakehouseState.applicationStore.notificationService.notifyError(
-        'Error fetching data product entity',
+      this.lakehouseState.applicationStore.logService.warn(
+        LogEvent.create(LEGEND_MARKETPLACE_APP_EVENT.FETCH_INGEST_ENV_FAILURE),
+        `Failed to load data product with identifier ${this.dataProductDetails ? getDataProductDescriptorFromDetails(this.dataProductDetails) : '[UNKNOWN]'}: ${error.message}`,
         error.message,
       );
     } finally {

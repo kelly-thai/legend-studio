@@ -36,6 +36,7 @@ import {
   guaranteeNonNullable,
   guaranteeType,
   isNonNullable,
+  LogEvent,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -82,6 +83,7 @@ import {
   DataProductLayoutState,
   TerminalProductLayoutState,
 } from './BaseLayoutState.js';
+import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 
 const ARTIFACT_GENERATION_DAT_PRODUCT_KEY = 'dataProduct';
 
@@ -425,7 +427,8 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       this.loadingLakehouseEnvironmentSummariesState.complete();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notificationService.notifyError(
+      this.applicationStore.logService.warn(
+        LogEvent.create(LEGEND_MARKETPLACE_APP_EVENT.FETCH_INGEST_ENV_FAILURE),
         `Unable to load lakehouse environment summaries: ${error.message}`,
       );
       this.loadingLakehouseEnvironmentSummariesState.fail();
@@ -447,7 +450,8 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       return response;
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notificationService.notifyError(
+      this.applicationStore.logService.warn(
+        LogEvent.create(LEGEND_MARKETPLACE_APP_EVENT.FETCH_INGEST_ENV_FAILURE),
         `Unable to load lakehouse environment summary: ${error.message}`,
       );
       return undefined;
@@ -471,7 +475,10 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
               return V1_deserializeIngestEnvironment(env);
             } catch (error) {
               assertErrorThrown(error);
-              this.applicationStore.notificationService.notifyError(
+              this.applicationStore.logService.warn(
+                LogEvent.create(
+                  LEGEND_MARKETPLACE_APP_EVENT.FETCH_INGEST_ENV_FAILURE,
+                ),
                 `Unable to load lakehouse environment details for ${discoveryEnv.ingestEnvironmentUrn}: ${error.message}`,
               );
               return undefined;
@@ -483,7 +490,8 @@ export class MarketplaceLakehouseStore implements CommandRegistrar {
       this.loadingLakehouseEnvironmentDetailsState.complete();
     } catch (error) {
       assertErrorThrown(error);
-      this.applicationStore.notificationService.notifyError(
+      this.applicationStore.logService.warn(
+        LogEvent.create(LEGEND_MARKETPLACE_APP_EVENT.FETCH_INGEST_ENV_FAILURE),
         `Unable to load lakehouse environment details: ${error.message}`,
       );
       this.loadingLakehouseEnvironmentSummariesState.fail();

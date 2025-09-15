@@ -66,7 +66,7 @@ export const LegendMarketplaceProviderCard = (props: {
 
   return (
     <LegendMarketplaceCard
-      size="large"
+      size="small"
       content={content}
       actions={actions}
       className="legend-marketplace-vendor-data-card"
